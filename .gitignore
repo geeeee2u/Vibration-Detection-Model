@@ -1,0 +1,19 @@
+# Python runtime and tooling
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+
+# Local input data and generated analysis artifacts
+AI Model Raw Data.xlsx
+case1_vibration_anomaly_results.csv
+case1_vibration_histogram.png
+case1_vibration_timeseries.png
+synthetic_anomaly_outputs/
+output/
+tmp/
+
+# Presentation artifacts and locally exported UI
+*.pdf
+*.pptx
+stitch_vibration_insight_analysis_dashboard/
