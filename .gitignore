@@ -5,7 +5,6 @@ __pycache__/
 *.py[cod]
 
 # Local input data and generated analysis artifacts
-AI Model Raw Data.xlsx
 case1_vibration_anomaly_results.csv
 case1_vibration_histogram.png
 case1_vibration_timeseries.png
