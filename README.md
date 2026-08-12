@@ -9,6 +9,20 @@ python -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
+## 로컬 웹 대시보드
+
+Stitch 기반 화면과 Case1 분석 결과를 웹으로 확인하려면 아래 명령을 실행합니다.
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m uvicorn backend.main:app --reload
+```
+
+브라우저에서 `http://127.0.0.1:8000/`을 엽니다. 메뉴에서 진동 분석(`/analysis`), 알람 내역(`/alarms`), 성능 평가(`/performance`), 모델 설정(`/settings`)을 확인할 수 있습니다.
+
+처음 실행했거나 분석 결과가 없으면 **모델 설정** 페이지에서 `저장 후 재분석`을 누르세요. `AI Model Raw Data.xlsx`의 `Case1` 데이터를 다시 분석한 뒤 웹 화면에 반영합니다. 분석 결과 CSV와 로컬 모델 설정은 실행 산출물이므로 GitHub에 저장하지 않습니다.
+
 ## 실행
 
 ```powershell

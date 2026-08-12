@@ -19,3 +19,6 @@ stitch_vibration_insight_analysis_dashboard/
 
 # Local isolated development worktrees
 .worktrees/
+
+# Local dashboard runtime settings
+runtime/
