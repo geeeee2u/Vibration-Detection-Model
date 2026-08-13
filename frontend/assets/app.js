@@ -66,7 +66,15 @@ function bindRangeButtons(reload) {
 }
 
 function bindNavigation() {
-  const routes = { "개요": "/", "진동 분석": "/analysis", "알람 내역": "/alarms", "성능 평가": "/performance", "모델 설정": "/settings" };
+  const routes = {
+    "개요": "/",
+    "진동 분석": "/analysis",
+    "알람 내역": "/alarms",
+    "알람 이력": "/alarms",
+    "경보 이력": "/alarms",
+    "성능 평가": "/performance",
+    "모델 설정": "/settings",
+  };
   document.querySelectorAll("nav a, aside a").forEach(link => {
     const route = Object.entries(routes).find(([label]) => link.textContent.includes(label))?.[1];
     if (route) link.href = route;
