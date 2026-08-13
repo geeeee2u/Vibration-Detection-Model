@@ -51,3 +51,9 @@ def test_analysis_page_loads_chartjs_before_the_dashboard_script():
     html = (ROOT / "frontend" / "analysis.html").read_text(encoding="utf-8")
 
     assert "cdn.jsdelivr.net/npm/chart.js" in html
+
+
+def test_performance_page_has_an_explicit_dark_background():
+    html = (ROOT / "frontend" / "performance.html").read_text(encoding="utf-8")
+
+    assert '<body data-page="performance" class="bg-background' in html
