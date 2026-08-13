@@ -42,3 +42,36 @@ def rows_payload(frame: pd.DataFrame, columns: list[str] | None = None) -> list[
     if columns:
         frame = frame[[column for column in columns if column in frame]]
     return [_record(row) for _, row in frame.iterrows()]
+
+
+def performance_payload(metrics_path: str | Path) -> dict:
+    """Shape persisted synthetic-evaluation metrics for the dashboard."""
+    metrics = pd.read_csv(metrics_path)
+    normal = metrics.loc[metrics["anomaly_type"] == "normal"]
+    patterns = metrics.loc[metrics["anomaly_type"] != "normal"]
+
+    payload_patterns = []
+    detected_total = 0
+    rows_total = 0
+    for _, row in patterns.iterrows():
+        rows = int(row["rows"])
+        recall = float(row["recall"])
+        detected_rows = round(rows * recall)
+        payload_patterns.append(
+            {
+                "anomaly_type": str(row["anomaly_type"]),
+                "rows": rows,
+                "detected_rows": detected_rows,
+                "recall": recall,
+            }
+        )
+        detected_total += detected_rows
+        rows_total += rows
+
+    return {
+        "normal_false_positive_rate": (
+            float(normal.iloc[0]["false_positive_rate"]) if not normal.empty else None
+        ),
+        "overall_recall": detected_total / rows_total if rows_total else 0.0,
+        "patterns": payload_patterns,
+    }
