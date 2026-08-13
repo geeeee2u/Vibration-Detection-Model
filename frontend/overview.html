@@ -1,1 +1,296 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>개요 | 진동 이상탐지</title><link rel="stylesheet" href="/assets/style.css"><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script defer src="/assets/app.js"></script></head><body data-page="overview"><nav><b>VIBRATION SENTINEL</b><a href="/">개요</a><a href="/analysis">진동 분석</a><a href="/alarms">알람 내역</a><a href="/performance">성능 평가</a><a href="/settings">모델 설정</a></nav><main><header><h1>개요</h1><div><input id="start" type="datetime-local"><input id="end" type="datetime-local"><button id="apply">기간 적용</button></div></header><div id="content">불러오는 중...</div></main></body></html>
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>개요 - 진동 감지 모델</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#131b2e",
+                        "surface-container-highest": "#273647",
+                        "on-tertiary": "#472a00",
+                        "surface-container-low": "#0d1c2d",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "tertiary-container": "#ca8100",
+                        "outline-variant": "#424754",
+                        "surface-tint": "#adc6ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "secondary": "#bec6e0",
+                        "tertiary-fixed": "#ffddb8",
+                        "error": "#ffb4ab",
+                        "surface-dim": "#051424",
+                        "on-primary-container": "#00285d",
+                        "surface-variant": "#273647",
+                        "inverse-primary": "#005ac2",
+                        "secondary-fixed": "#dae2fd",
+                        "on-background": "#d4e4fa",
+                        "on-secondary": "#283044",
+                        "surface-container": "#122131",
+                        "primary-fixed": "#d8e2ff",
+                        "on-surface": "#d4e4fa",
+                        "inverse-surface": "#d4e4fa",
+                        "background": "#051424",
+                        "surface-container-high": "#1c2b3c",
+                        "primary-container": "#4d8eff",
+                        "primary": "#adc6ff",
+                        "error-container": "#93000a",
+                        "on-error": "#690005",
+                        "on-tertiary-fixed": "#2a1700",
+                        "on-primary-fixed-variant": "#004395",
+                        "secondary-container": "#3f465c",
+                        "on-tertiary-container": "#3e2400",
+                        "on-primary-fixed": "#001a42",
+                        "surface": "#051424",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "tertiary": "#ffb95f",
+                        "on-primary": "#002e6a",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-secondary-container": "#adb4ce",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-lowest": "#010f1f",
+                        "surface-bright": "#2c3a4c",
+                        "outline": "#8c909f",
+                        "inverse-on-surface": "#233143"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "card-padding": "20px",
+                        "container-margin": "24px",
+                        "stack-md": "16px",
+                        "stack-sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["JetBrains Mono"],
+                        "data-mono": ["JetBrains Mono"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md-mobile": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Grid backgrounds for charts */
+        .chart-grid {
+            background-image: 
+                linear-gradient(to right, #1e293b 1px, transparent 1px),
+                linear-gradient(to bottom, #1e293b 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+    </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script defer src="/assets/app.js"></script>
+</head>
+<body data-page="overview" class="bg-background text-on-background font-body-md min-h-screen">
+<!-- TopNavBar -->
+<header class="docked full-width top-0 h-16 bg-surface dark:bg-surface border-b border-outline-variant bg-surface flat no shadows flex justify-between items-center w-full px-gutter ml-60 max-w-[calc(100%-240px)] fixed z-50">
+<div class="flex items-center">
+<h1 class="font-title-sm text-title-sm font-bold text-on-surface">진동 감지 모델</h1>
+</div>
+<div class="flex items-center space-x-4">
+<button class="hover:bg-surface-container-highest rounded-full p-2 transition-all duration-200">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" data-icon="notifications" data-weight="fill">notifications</span>
+</button>
+<button class="hover:bg-surface-container-highest rounded-full p-2 transition-all duration-200">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" data-icon="account_circle" data-weight="fill">account_circle</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar -->
+<nav class="w-60 h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container border-r border-outline-variant bg-surface-container flat no shadows flex flex-col h-full py-4 space-y-2 z-50">
+<div class="px-gutter mb-6">
+<div class="flex items-center space-x-3 mb-2">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-sm" data-icon="memory" data-weight="fill">memory</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed text-sm">Industrial Sentinel</h2>
+<p class="font-label-caps text-label-caps text-on-surface-variant text-[10px]">Isolation Forest v2.4</p>
+</div>
+</div>
+</div>
+<ul class="flex flex-col space-y-1 w-full flex-grow px-2">
+<li>
+<a class="flex items-center px-4 py-3 text-primary border-l-4 border-primary bg-secondary-container/30 font-bold scale-[0.99] rounded-r" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard" data-weight="fill">dashboard</span>
+<span class="font-label-caps text-label-caps">개요</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200 border-l-4 border-transparent rounded-r" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="analytics" data-weight="fill">analytics</span>
+<span class="font-label-caps text-label-caps">진동 분석</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200 border-l-4 border-transparent rounded-r" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="notifications_active" data-weight="fill">notifications_active</span>
+<span class="font-label-caps text-label-caps">알람 내역</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200 border-l-4 border-transparent rounded-r" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="query_stats" data-weight="fill">query_stats</span>
+<span class="font-label-caps text-label-caps">성능 평가</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200 border-l-4 border-transparent rounded-r" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings" data-weight="fill">settings</span>
+<span class="font-label-caps text-label-caps">모델 설정</span>
+</a>
+</li>
+</ul>
+</nav>
+<!-- Main Content -->
+<main class="ml-60 pt-16 p-container-margin min-h-screen pb-20">
+<!-- Header & Time Range -->
+<div class="flex justify-between items-center mb-stack-md">
+<div>
+<h2 class="font-headline-md text-headline-md">개요</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">시스템 상태 및 실시간 트렌드</p>
+</div>
+<div class="flex space-x-2 bg-surface-container-high p-1 rounded-lg border border-outline-variant">
+<button class="px-3 py-1.5 text-sm font-label-caps bg-primary-container text-on-primary-container rounded">최근 1분</button>
+<button class="px-3 py-1.5 text-sm font-label-caps text-on-surface-variant hover:text-on-surface">5분</button>
+<button class="px-3 py-1.5 text-sm font-label-caps text-on-surface-variant hover:text-on-surface">30분</button>
+<button class="px-3 py-1.5 text-sm font-label-caps text-on-surface-variant hover:text-on-surface">1시간</button>
+<button class="px-3 py-1.5 text-sm font-label-caps text-on-surface-variant hover:text-on-surface">전체</button>
+</div>
+</div>
+<!-- 5 Summary Cards -->
+<div class="grid grid-cols-5 gap-stack-md mb-stack-md">
+<!-- Card 1 -->
+<div class="bg-surface-container rounded-lg p-card-padding border border-outline-variant">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">현재 진동값</span>
+<span class="material-symbols-outlined text-primary text-sm">sensors</span>
+</div>
+<div id="overview-current-vibration" class="font-data-mono text-display-lg text-primary">-</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1">14:32:01</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container rounded-lg p-card-padding border border-outline-variant">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">이동평균</span>
+<span class="material-symbols-outlined text-secondary text-sm">timeline</span>
+</div>
+<div id="overview-short-mean" class="font-data-mono text-display-lg text-on-surface">-</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1">최근 10개 평균</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container rounded-lg p-card-padding border border-outline-variant">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">이상 점수</span>
+<span class="material-symbols-outlined text-tertiary text-sm">warning</span>
+</div>
+<div id="overview-score" class="font-data-mono text-display-lg text-tertiary">-</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center">
+<span id="overview-threshold" class="text-error mr-1">-</span> vs 임계값
+                </div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container rounded-lg p-card-padding border border-outline-variant">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">최근 확정 경보</span>
+<span class="material-symbols-outlined text-error text-sm">crisis_alert</span>
+</div>
+<div id="overview-alarm-count" class="font-data-mono text-display-lg text-error">-</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1">최근 1시간 내</div>
+</div>
+<!-- Card 5 -->
+<div class="bg-surface-container rounded-lg p-card-padding border border-outline-variant flex flex-col justify-center items-center relative overflow-hidden">
+<div class="absolute inset-0 bg-tertiary-container/10"></div>
+<span class="font-label-caps text-label-caps text-tertiary mb-2 relative z-10">현재 상태</span>
+<div id="overview-status" class="px-4 py-1.5 rounded-full bg-tertiary-container text-on-tertiary-container font-bold text-sm relative z-10">-</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant mt-2 relative z-10">유형: 트렌드 이상</div>
+</div>
+</div>
+<!-- Main Chart Area -->
+<div class="bg-surface-container rounded-lg border border-outline-variant mb-stack-md overflow-hidden">
+<div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-high">
+<h3 class="font-title-sm text-title-sm">실시간 진동 트렌드</h3>
+<div class="flex space-x-4">
+<div class="flex items-center space-x-1"><div class="w-3 h-3 rounded-full bg-primary"></div><span class="text-xs font-label-caps">진동값</span></div>
+<div class="flex items-center space-x-1"><div class="w-3 h-3 rounded-full bg-on-primary-fixed-variant"></div><span class="text-xs font-label-caps">단기 이동평균</span></div>
+<div class="flex items-center space-x-1"><div class="w-3 h-0.5 border-t border-dashed border-tertiary"></div><span class="text-xs font-label-caps">정상</span></div>
+<div class="flex items-center space-x-1"><div class="w-3 h-0.5 border-t border-dashed border-error"></div><span class="text-xs font-label-caps">이상</span></div>
+</div>
+</div>
+<div class="p-4 h-[400px] relative w-full flex items-end chart-grid"><canvas id="overview-trend-chart" class="absolute inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)]"></canvas>
+<!-- Decorative Y-Axis -->
+<div class="absolute left-4 top-4 bottom-8 flex flex-col justify-between text-on-surface-variant font-data-mono text-xs z-10">
+<span>4.0</span>
+<span>3.0</span>
+<span>2.0</span>
+<span>1.0</span>
+<span>0.0</span>
+</div>
+<!-- Chart Area Placeholder (Simulated lines and regions) -->
+<div class="ml-8 w-full h-full relative border-l border-b border-outline-variant">
+<!-- Background confirmed anomaly region -->
+<div class="absolute right-[20%] top-0 bottom-0 w-[15%] bg-error-container/20"></div>
+<!-- SVG for lines -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 400">
+<!-- Normal Avg Line -->
+<line stroke="#8c909f" stroke-dasharray="4,4" stroke-width="1" x1="0" x2="1000" y1="300" y2="300"></line>
+<!-- Anomaly Avg Line -->
+<line stroke="#ffb4ab" stroke-dasharray="4,4" stroke-width="1" x1="0" x2="1000" y1="100" y2="100"></line>
+<!-- Main Vibration Line (Blue) -->
+<path d="M0,280 Q50,290 100,270 T200,280 T300,250 T400,270 T500,260 T600,240 T700,120 T750,90 T800,150 T850,240 T900,260 T1000,250" fill="none" stroke="#adc6ff" stroke-width="2"></path>
+<!-- Short Mean Line (Dark Blue) -->
+<path d="M0,285 Q50,295 100,280 T200,285 T300,260 T400,275 T500,265 T600,250 T700,180 T750,140 T800,170 T850,250 T900,265 T1000,255" fill="none" opacity="0.8" stroke="#004395" stroke-width="2"></path>
+<!-- Anomaly Dots -->
+<circle cx="700" cy="120" fill="#ffb95f" r="4"></circle>
+<circle cx="725" cy="100" fill="#ffb95f" r="4"></circle>
+<circle cx="750" cy="90" fill="#ef4444" r="5"></circle>
+<circle cx="775" cy="110" fill="#ffb95f" r="4"></circle>
+<circle cx="800" cy="150" fill="#ffb95f" r="4"></circle>
+</svg>
+<!-- X-Axis Labels -->
+<div class="absolute -bottom-6 left-0 right-0 flex justify-between text-on-surface-variant font-data-mono text-xs">
+<span>14:22</span>
+<span>14:24</span>
+<span>14:26</span>
+<span>14:28</span>
+<span>14:30</span>
+<span>14:32</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

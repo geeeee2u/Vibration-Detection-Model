@@ -1,1 +1,393 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>알람 내역</title><link rel="stylesheet" href="/assets/style.css"><script defer src="/assets/app.js"></script></head><body data-page="alarms"><nav><b>VIBRATION SENTINEL</b><a href="/">개요</a><a href="/analysis">진동 분석</a><a href="/alarms">알람 내역</a><a href="/performance">성능 평가</a><a href="/settings">모델 설정</a></nav><main><header><h1>알람 내역</h1><button id="apply">새로고침</button></header><div id="content">불러오는 중...</div></main></body></html>
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Industrial Sentinel - 알람 내역</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        /* Custom scrollbar for data tables */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #010f1f; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #273647; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #424754; 
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#131b2e",
+                        "surface-container-highest": "#273647",
+                        "on-tertiary": "#472a00",
+                        "surface-container-low": "#0d1c2d",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "tertiary-container": "#ca8100",
+                        "outline-variant": "#424754",
+                        "surface-tint": "#adc6ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "secondary": "#bec6e0",
+                        "tertiary-fixed": "#ffddb8",
+                        "error": "#ffb4ab",
+                        "surface-dim": "#051424",
+                        "on-primary-container": "#00285d",
+                        "surface-variant": "#273647",
+                        "inverse-primary": "#005ac2",
+                        "secondary-fixed": "#dae2fd",
+                        "on-background": "#d4e4fa",
+                        "on-secondary": "#283044",
+                        "surface-container": "#122131",
+                        "primary-fixed": "#d8e2ff",
+                        "on-surface": "#d4e4fa",
+                        "inverse-surface": "#d4e4fa",
+                        "background": "#051424",
+                        "surface-container-high": "#1c2b3c",
+                        "primary-container": "#4d8eff",
+                        "primary": "#adc6ff",
+                        "error-container": "#93000a",
+                        "on-error": "#690005",
+                        "on-tertiary-fixed": "#2a1700",
+                        "on-primary-fixed-variant": "#004395",
+                        "secondary-container": "#3f465c",
+                        "on-tertiary-container": "#3e2400",
+                        "on-primary-fixed": "#001a42",
+                        "surface": "#051424",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "tertiary": "#ffb95f",
+                        "on-primary": "#002e6a",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-secondary-container": "#adb4ce",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-lowest": "#010f1f",
+                        "surface-bright": "#2c3a4c",
+                        "outline": "#8c909f",
+                        "inverse-on-surface": "#233143"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "card-padding": "20px",
+                        "container-margin": "24px",
+                        "stack-md": "16px",
+                        "stack-sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["JetBrains Mono"],
+                        "data-mono": ["JetBrains Mono"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md-mobile": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+<script defer src="/assets/app.js"></script>
+</head>
+<body data-page="alarms" class="bg-background text-on-surface h-screen w-screen overflow-hidden flex flex-col md:flex-row antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- JSON: SideNavBar (Shared Component) -->
+<!-- Active State Logic: Page is "Alarm History", matches index 2 "Alarm History" -->
+<nav class="hidden md:flex w-60 h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container border-r border-outline-variant z-50 flex-col py-4 space-y-2">
+<div class="px-6 mb-8 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" data-icon="settings_suggest">settings_suggest</span>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed tracking-tight">Industrial Sentinel</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Isolation Forest v2.4</p>
+</div>
+</div>
+<div class="flex-1 px-3 space-y-1">
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">개요</span>
+</a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-body-md text-body-md">진동 분석</span>
+</a>
+<!-- Active: Alarm History -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-primary border-l-4 border-primary bg-secondary-container/30 font-bold scale-[0.99] transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="notifications_active" data-weight="fill" style="font-variation-settings: 'FILL' 1;">notifications_active</span>
+<span class="font-body-md text-body-md">알람 내역</span>
+</a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+<span class="font-body-md text-body-md">성능 평가</span>
+</a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md">모델 설정</span>
+</a>
+</div>
+<div class="px-6 mt-auto">
+<div class="flex items-center gap-3 py-3 border-t border-outline-variant">
+<div class="w-8 h-8 rounded-full bg-surface-bright flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-[16px] text-on-surface" data-icon="robot_2">robot_2</span>
+</div>
+<div>
+<p class="font-body-sm text-body-sm font-medium">시스템 상태</p>
+<p class="font-label-caps text-label-caps text-primary">온라인</p>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col md:ml-60 h-screen overflow-hidden relative">
+<!-- JSON: TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-gutter bg-surface dark:bg-surface border-b border-outline-variant h-16 shrink-0 z-40">
+<div class="flex items-center gap-4">
+<h2 class="font-title-sm text-title-sm font-bold text-on-surface">진동 감지 모델</h2>
+</div>
+<div class="flex items-center gap-2">
+<!-- Search on left of actions -->
+<div class="relative hidden sm:block mr-2">
+<span class="material-symbols-outlined absolute left-2 top-1.5 text-on-surface-variant text-[20px]" data-icon="search">search</span>
+<input class="bg-surface-container-low border border-outline-variant rounded text-on-surface font-body-sm text-body-sm pl-9 pr-3 py-1.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors w-48" placeholder="검색..." type="text"/>
+</div>
+<button class="p-2 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Canvas / Page Content -->
+<main class="flex-1 overflow-x-hidden overflow-y-auto bg-background p-container-margin relative flex gap-6">
+<!-- Left Side: Data Area -->
+<div class="flex-1 flex flex-col min-w-0">
+<!-- Page Header & Actions -->
+<div class="flex justify-between items-end mb-6">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-1">알람 내역</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">감지된 이상 이벤트를 필터링하고 조사합니다.</p>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 rounded bg-transparent border border-outline text-on-surface hover:bg-surface-container-high hover:border-outline-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+<span class="font-label-caps text-label-caps">CSV 내보내기</span>
+</button>
+</div>
+<!-- Filters Bento Box -->
+<div class="bg-surface-container border border-outline-variant rounded-lg p-card-padding mb-6 flex flex-wrap gap-4 items-end">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps text-on-surface-variant">시간 범위</label>
+<div class="flex items-center gap-2">
+<input class="bg-surface-container-low border border-outline-variant rounded text-on-surface font-data-mono text-data-mono px-3 py-1.5 focus:border-primary outline-none" type="datetime-local" value="2023-10-24T00:00"/>
+<span class="text-on-surface-variant">-</span>
+<input class="bg-surface-container-low border border-outline-variant rounded text-on-surface font-data-mono text-data-mono px-3 py-1.5 focus:border-primary outline-none" type="datetime-local" value="2023-10-24T23:59"/>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps text-on-surface-variant">상태</label>
+<select class="bg-surface-container-low border border-outline-variant rounded text-on-surface font-body-sm text-body-sm px-3 py-2 pr-8 focus:border-primary outline-none appearance-none cursor-pointer">
+<option>전체</option>
+<option>정상</option>
+<option>이상 후보</option>
+<option>확정 이상</option>
+</select>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps text-on-surface-variant">이상 유형</label>
+<select class="bg-surface-container-low border border-outline-variant rounded text-on-surface font-body-sm text-body-sm px-3 py-2 pr-8 focus:border-primary outline-none appearance-none cursor-pointer">
+<option>모든 유형</option>
+<option>임펄스</option>
+<option>연속형</option>
+</select>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-label-caps text-on-surface-variant">최소 점수</label>
+<input class="bg-surface-container-low border border-outline-variant rounded text-on-surface font-data-mono text-data-mono px-3 py-1.5 w-24 focus:border-primary outline-none" placeholder="e.g. 8.0" step="0.1" type="number"/>
+</div>
+</div>
+<!-- Data Table -->
+<div class="flex-1 bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden flex flex-col min-h-0">
+<div class="overflow-x-auto overflow-y-auto">
+<table class="w-full text-left border-collapse whitespace-nowrap">
+<thead class="sticky top-0 bg-surface-container border-b border-outline-variant z-10">
+<tr>
+<th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant">발생 시간</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-right">진동값</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-right">단기 평균 (short_mean)</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-right">이상 점수</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-right">임계값</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-center">상태</th>
+<th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant">이상 유형</th>
+</tr>
+</thead>
+<tbody id="alarm-rows" class="divide-y divide-outline-variant font-data-mono text-data-mono text-on-surface">
+<!-- Row 1 (Normal) -->
+<tr class="hover:bg-surface-container transition-colors cursor-pointer">
+<td class="py-3 px-4">2023-10-24 14:32:10</td>
+<td class="py-3 px-4 text-right">2.41</td>
+<td class="py-3 px-4 text-right">2.39</td>
+<td class="py-3 px-4 text-right">3.12</td>
+<td class="py-3 px-4 text-right text-on-surface-variant">7.50</td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-outline-variant text-on-surface-variant font-label-caps text-label-caps">정상</span>
+</td>
+<td class="py-3 px-4 text-on-surface-variant">-</td>
+</tr>
+<!-- Row 2 (Candidate - Active Selection for Demo) -->
+<tr class="bg-surface-container-high border-l-2 border-primary hover:bg-surface-container-high transition-colors cursor-pointer">
+<td class="py-3 px-4">2023-10-24 14:45:22</td>
+<td class="py-3 px-4 text-right text-tertiary">5.88</td>
+<td class="py-3 px-4 text-right">4.12</td>
+<td class="py-3 px-4 text-right text-tertiary">8.05</td>
+<td class="py-3 px-4 text-right text-on-surface-variant">7.50</td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded bg-tertiary-container/10 border border-tertiary text-tertiary font-label-caps text-label-caps">이상 후보</span>
+</td>
+<td class="py-3 px-4">임펄스</td>
+</tr>
+<!-- Row 3 (Confirmed) -->
+<tr class="hover:bg-surface-container transition-colors cursor-pointer">
+<td class="py-3 px-4">2023-10-24 15:10:05</td>
+<td class="py-3 px-4 text-right text-error">9.45</td>
+<td class="py-3 px-4 text-right">8.90</td>
+<td class="py-3 px-4 text-right text-error">12.40</td>
+<td class="py-3 px-4 text-right text-on-surface-variant">7.50</td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded bg-error-container/10 border border-error text-error font-label-caps text-label-caps">확정 이상</span>
+</td>
+<td class="py-3 px-4">연속형</td>
+</tr>
+<!-- Row 4 (Normal) -->
+<tr class="hover:bg-surface-container transition-colors cursor-pointer">
+<td class="py-3 px-4">2023-10-24 15:15:30</td>
+<td class="py-3 px-4 text-right">1.95</td>
+<td class="py-3 px-4 text-right">2.10</td>
+<td class="py-3 px-4 text-right">2.88</td>
+<td class="py-3 px-4 text-right text-on-surface-variant">7.50</td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-outline-variant text-on-surface-variant font-label-caps text-label-caps">정상</span>
+</td>
+<td class="py-3 px-4 text-on-surface-variant">-</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right Side: Detail Drawer (Simulated Open) -->
+<aside id="alarm-detail" class="w-[400px] shrink-0 bg-surface-container border border-outline-variant rounded-lg flex flex-col overflow-hidden shadow-2xl relative">
+<!-- Drawer Header -->
+<div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-high">
+<h3 class="font-title-sm text-title-sm font-bold text-on-surface">이벤트 상세</h3>
+<button class="text-on-surface-variant hover:text-on-surface p-1 rounded hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+</button>
+</div>
+<div class="p-6 flex-1 overflow-y-auto space-y-6">
+<!-- Top Status & Time -->
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="inline-flex items-center px-2 py-1 rounded bg-tertiary-container/10 border border-tertiary text-tertiary font-label-caps text-label-caps">이상 후보</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant border border-outline-variant px-2 py-1 rounded">임펄스 유형</span>
+</div>
+<p class="font-data-mono text-data-mono text-on-surface text-lg">2023-10-24 14:45:22</p>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest p-3 border border-outline-variant rounded">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">이상 점수</p>
+<p class="font-data-mono text-data-mono text-tertiary text-xl">8.05</p>
+<p class="font-label-caps text-label-caps text-outline mt-1">임계값: 7.50</p>
+</div>
+<div class="bg-surface-container-lowest p-3 border border-outline-variant rounded">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">피크 진동값</p>
+<p class="font-data-mono text-data-mono text-on-surface text-xl">5.88 <span class="text-sm text-on-surface-variant">mm/s</span></p>
+<p class="font-label-caps text-label-caps text-outline mt-1">단기 평균: 4.12</p>
+</div>
+</div>
+<!-- Chart Area -->
+<div>
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-3">국소 진동 트렌드 (±1분)</h4>
+<div class="w-full h-48 bg-surface-container-lowest border border-outline-variant rounded relative overflow-hidden group">
+<!-- Abstract aesthetic representation of chart background -->
+<div class="absolute inset-0 grid grid-cols-6 grid-rows-4 opacity-10 pointer-events-none">
+<div class="border-r border-b border-on-surface"></div><div class="border-r border-b border-on-surface"></div><div class="border-r border-b border-on-surface"></div><div class="border-r border-b border-on-surface"></div><div class="border-r border-b border-on-surface"></div><div class="border-b border-on-surface"></div>
+<div class="border-r border-b border-on-surface"></div><div class="border-r border-b border-on-surface"></div><div class="border-r border-b border-on-surface"></div><div class="border-r border-b border-on-surface"></div><div class="border-r border-b border-on-surface"></div><div class="border-b border-on-surface"></div>
+<div class="border-r border-b border-on-surface"></div><div class="border-r border-b border-on-surface"></div><div class="border-r border-b border-on-surface"></div><div class="border-r border-b border-on-surface"></div><div class="border-r border-b border-on-surface"></div><div class="border-b border-on-surface"></div>
+<div class="border-r border-on-surface"></div><div class="border-r border-on-surface"></div><div class="border-r border-on-surface"></div><div class="border-r border-on-surface"></div><div class="border-r border-on-surface"></div><div></div>
+</div>
+<!-- SVG Path representing data spike (Amber color for candidate) -->
+<svg class="w-full h-full absolute inset-0" preserveaspectratio="none" viewbox="0 0 100 100">
+<!-- Threshold line -->
+<line stroke="#424754" stroke-dasharray="4" stroke-width="1" x1="0" x2="100" y1="30" y2="30"></line>
+<!-- Data Line -->
+<path class="vector-effect-non-scaling-stroke" d="M0,80 L20,75 L40,82 L45,25 L50,15 L55,35 L60,78 L80,72 L100,75" fill="none" stroke="#ffb95f" stroke-width="2"></path>
+<!-- Highlight event point -->
+<circle cx="50" cy="15" fill="#051424" r="4" stroke="#ffb95f" stroke-width="2"></circle>
+</svg>
+<div class="absolute bottom-2 left-2 right-2 flex justify-between font-label-caps text-label-caps text-outline text-[10px]">
+<span>-1분</span>
+<span>이벤트 (0초)</span>
+<span>+1분</span>
+</div>
+</div>
+</div>
+<!-- Notice Alert Box -->
+<div class="bg-surface-container-high border-l-2 border-tertiary p-4 rounded flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary shrink-0 mt-0.5 text-[20px]" data-icon="info">info</span>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+                            이 경보는 분석 후보이며, 실제 설비 고장 여부는 현장 확인이 필요합니다.
+                        </p>
+</div>
+</div>
+</aside>
+</main>
+</div>
+</body></html>
