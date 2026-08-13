@@ -45,3 +45,9 @@ def test_frontend_includes_account_switching_and_technician_settings_denial():
     assert "/api/auth/login" in script
     assert "/api/auth/logout" in script
     assert "해당 계정으로는 접근할 수 없습니다." in script
+
+
+def test_analysis_page_loads_chartjs_before_the_dashboard_script():
+    html = (ROOT / "frontend" / "analysis.html").read_text(encoding="utf-8")
+
+    assert "cdn.jsdelivr.net/npm/chart.js" in html
