@@ -1,7 +1,7 @@
 import pandas as pd
 from fastapi.testclient import TestClient
 
-from backend.main import create_app
+from backend.main import AuthConfig, create_app
 
 
 def write_results(tmp_path: object) -> object:
@@ -76,6 +76,13 @@ def test_reanalyze_returns_performance_from_the_configured_metrics_file(tmp_path
         settings_path=tmp_path / "settings.json",
         metrics_path=metrics_path,
         input_path=tmp_path / "input.xlsx",
+        auth_config=AuthConfig(
+            session_secret="test-secret",
+            administrator_username="administrator",
+            administrator_password="admin123",
+            technician_username="technician",
+            technician_password="tech123",
+        ),
     )
     result = pd.DataFrame({"is_anomaly": [False, True]})
 
@@ -100,7 +107,9 @@ def test_reanalyze_returns_performance_from_the_configured_metrics_file(tmp_path
 
     monkeypatch.setattr("backend.main.rerun_analysis", fake_rerun)
 
-    response = TestClient(app).post("/api/reanalyze", json={})
+    client = TestClient(app)
+    client.post("/api/auth/login", json={"username": "administrator", "password": "admin123"})
+    response = client.post("/api/reanalyze", json={})
 
     assert response.status_code == 200
     assert response.json() == {
@@ -119,3 +128,51 @@ def test_reanalyze_returns_performance_from_the_configured_metrics_file(tmp_path
             ],
         },
     }
+
+
+def test_technician_cannot_read_or_change_model_settings(tmp_path):
+    app = create_app(
+        results_path=write_results(tmp_path),
+        settings_path=tmp_path / "settings.json",
+        metrics_path=write_metrics(tmp_path),
+        input_path=tmp_path / "input.xlsx",
+        auth_config=AuthConfig(
+            session_secret="test-secret",
+            administrator_username="administrator",
+            administrator_password="admin123",
+            technician_username="technician",
+            technician_password="tech123",
+        ),
+    )
+    client = TestClient(app)
+
+    login = client.post("/api/auth/login", json={"username": "technician", "password": "tech123"})
+
+    assert login.status_code == 200
+    assert login.json() == {"username": "technician", "role": "technician"}
+    assert client.get("/api/settings").status_code == 403
+    assert client.put("/api/settings", json={}).status_code == 403
+    assert client.get("/api/auth/me").json() == {"username": "technician", "role": "technician"}
+
+
+def test_administrator_can_access_model_settings_after_login(tmp_path):
+    app = create_app(
+        results_path=write_results(tmp_path),
+        settings_path=tmp_path / "settings.json",
+        metrics_path=write_metrics(tmp_path),
+        input_path=tmp_path / "input.xlsx",
+        auth_config=AuthConfig(
+            session_secret="test-secret",
+            administrator_username="administrator",
+            administrator_password="admin123",
+            technician_username="technician",
+            technician_password="tech123",
+        ),
+    )
+    client = TestClient(app)
+
+    client.post("/api/auth/login", json={"username": "administrator", "password": "admin123"})
+
+    assert client.get("/api/settings").status_code == 200
+    assert client.post("/api/auth/logout").status_code == 200
+    assert client.get("/api/auth/me").status_code == 401

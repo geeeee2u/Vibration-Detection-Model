@@ -1,9 +1,13 @@
 """FastAPI entry point for the local Case1 vibration dashboard."""
 from __future__ import annotations
+import os
+from dataclasses import dataclass
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+from starlette.middleware.sessions import SessionMiddleware
 from backend.analysis_service import rerun_analysis
 from backend.config import ModelSettings, load_settings, save_settings
 from backend.data_service import (
@@ -21,13 +25,52 @@ SETTINGS = ROOT / "runtime" / "model_settings.json"
 METRICS = ROOT / "synthetic_anomaly_outputs" / "synthetic_anomaly_metrics.csv"
 PAGES = {"/": "overview.html", "/analysis": "analysis.html", "/alarms": "alarms.html", "/performance": "performance.html", "/settings": "settings.html"}
 
+
+def load_local_env(path: Path) -> None:
+    """Load simple KEY=VALUE pairs without adding a runtime dependency."""
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if "=" not in line or line.lstrip().startswith("#"):
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+@dataclass(frozen=True)
+class AuthConfig:
+    session_secret: str
+    administrator_username: str
+    administrator_password: str
+    technician_username: str
+    technician_password: str
+
+    @classmethod
+    def from_environment(cls) -> "AuthConfig":
+        load_local_env(ROOT / ".env")
+        return cls(
+            session_secret=os.getenv("SESSION_SECRET", "local-development-change-me"),
+            administrator_username=os.getenv("ADMIN_USERNAME", ""),
+            administrator_password=os.getenv("ADMIN_PASSWORD", ""),
+            technician_username=os.getenv("TECHNICIAN_USERNAME", ""),
+            technician_password=os.getenv("TECHNICIAN_PASSWORD", ""),
+        )
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
 def create_app(
     results_path: Path = RESULTS,
     settings_path: Path = SETTINGS,
     metrics_path: Path = METRICS,
     input_path: Path = INPUT,
+    auth_config: AuthConfig | None = None,
 ) -> FastAPI:
     app = FastAPI(title="Case1 Vibration Dashboard")
+    auth = auth_config or AuthConfig.from_environment()
+    app.add_middleware(SessionMiddleware, secret_key=auth.session_secret, same_site="lax", https_only=False)
     frontend = ROOT / "frontend"
     app.mount("/assets", StaticFiles(directory=frontend / "assets"), name="assets")
     def results(start: str | None, end: str | None):
@@ -35,6 +78,39 @@ def create_app(
         return filter_results(load_results(results_path), start, end)
     for route, filename in PAGES.items():
         app.add_api_route(route, lambda filename=filename: FileResponse(frontend / filename), methods=["GET"])
+
+    def current_user(request: Request) -> dict[str, str]:
+        username = request.session.get("username")
+        role = request.session.get("role")
+        if not username or role not in {"administrator", "technician"}:
+            raise HTTPException(401, "로그인이 필요합니다.")
+        return {"username": username, "role": role}
+
+    def require_administrator(request: Request) -> None:
+        if current_user(request)["role"] != "administrator":
+            raise HTTPException(403, "해당 계정으로는 접근할 수 없습니다.")
+
+    @app.post("/api/auth/login")
+    def login(credentials: LoginRequest, request: Request):
+        accounts = {
+            auth.administrator_username: (auth.administrator_password, "administrator"),
+            auth.technician_username: (auth.technician_password, "technician"),
+        }
+        password_and_role = accounts.get(credentials.username)
+        if not password_and_role or credentials.password != password_and_role[0]:
+            raise HTTPException(401, "아이디 또는 비밀번호가 올바르지 않습니다.")
+        request.session.clear()
+        request.session.update({"username": credentials.username, "role": password_and_role[1]})
+        return {"username": credentials.username, "role": password_and_role[1]}
+
+    @app.post("/api/auth/logout")
+    def logout(request: Request):
+        request.session.clear()
+        return {"ok": True}
+
+    @app.get("/api/auth/me")
+    def me(request: Request):
+        return current_user(request)
     @app.get("/api/overview")
     def overview(start: str | None = None, end: str | None = None): return overview_payload(results(start, end))
     @app.get("/api/trend")
@@ -50,11 +126,17 @@ def create_app(
             raise HTTPException(404, "성능 지표 파일이 없습니다. 모델 설정 화면에서 재분석을 실행해 주세요.")
         return performance_payload(metrics_path)
     @app.get("/api/settings")
-    def get_settings(): return load_settings(settings_path).__dict__
+    def get_settings(request: Request):
+        require_administrator(request)
+        return load_settings(settings_path).__dict__
     @app.put("/api/settings")
-    def put_settings(settings: ModelSettings): save_settings(settings, settings_path); return settings.__dict__
+    def put_settings(settings: ModelSettings, request: Request):
+        require_administrator(request)
+        save_settings(settings, settings_path)
+        return settings.__dict__
     @app.post("/api/reanalyze")
-    def reanalyze(settings: ModelSettings):
+    def reanalyze(settings: ModelSettings, request: Request):
+        require_administrator(request)
         save_settings(settings, settings_path)
         try: result = rerun_analysis(settings, input_path, results_path, metrics_path)
         except Exception as exc: raise HTTPException(500, f"재분석 실패: {exc}") from exc
