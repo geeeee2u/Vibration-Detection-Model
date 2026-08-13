@@ -1,5 +1,6 @@
 # Python runtime and tooling
 .venv/
+.env
 __pycache__/
 .pytest_cache/
 *.py[cod]
