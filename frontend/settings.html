@@ -212,7 +212,7 @@
 <span class="text-on-surface-variant">트리 개수</span>
 <span class="text-primary font-data-mono text-data-mono">200</span>
 </label>
-<input class="w-full accent-primary bg-surface h-2 rounded-full appearance-none" max="1000" min="100" step="50" type="range" value="200"/>
+<input name="n_estimators" class="w-full accent-primary bg-surface h-2 rounded-full appearance-none" max="1000" min="100" step="50" type="range" value="300"/>
 <div class="flex justify-between text-xs text-on-surface-variant mt-1">
 <span>100</span><span>1000</span>
 </div>
@@ -222,14 +222,14 @@
 <span class="text-on-surface-variant">이상 점수 임계값 분위수</span>
 <span class="text-primary font-data-mono text-data-mono">0.9950</span>
 </label>
-<input class="w-full bg-surface border border-outline-variant rounded px-3 py-2 text-on-surface font-data-mono text-data-mono focus:border-primary focus:ring-1 focus:ring-primary outline-none" max="0.9999" min="0.9000" step="0.0001" type="number" value="0.9950"/>
+<input name="threshold_quantile" class="w-full bg-surface border border-outline-variant rounded px-3 py-2 text-on-surface font-data-mono text-data-mono focus:border-primary focus:ring-1 focus:ring-primary outline-none" max="0.9999" min="0.9000" step="0.0001" type="number" value="0.999"/>
 </div>
 <div>
 <label class="flex justify-between font-label-caps text-label-caps mb-1">
 <span class="text-on-surface-variant">확정 경보 지속시간</span>
 <span class="text-primary font-data-mono text-data-mono">3.0</span>
 </label>
-<input class="w-full accent-primary bg-surface h-2 rounded-full appearance-none" max="60" min="1" step="0.5" type="range" value="3.0"/>
+<input name="persistence_seconds" class="w-full accent-primary bg-surface h-2 rounded-full appearance-none" max="60" min="1" step="1" type="range" value="5"/>
 </div>
 </div>
 </section>
@@ -242,15 +242,15 @@
 <div class="space-y-4">
 <div class="flex items-center justify-between gap-4">
 <label class="font-label-caps text-label-caps text-on-surface-variant whitespace-nowrap w-24">단기 윈도우</label>
-<input class="w-full bg-surface border border-outline-variant rounded px-3 py-1.5 text-on-surface font-data-mono text-data-mono focus:border-primary outline-none text-right" type="number" value="500"/>
+<input name="short_window" class="w-full bg-surface border border-outline-variant rounded px-3 py-1.5 text-on-surface font-data-mono text-data-mono focus:border-primary outline-none text-right" type="number" value="15"/>
 </div>
 <div class="flex items-center justify-between gap-4">
 <label class="font-label-caps text-label-caps text-on-surface-variant whitespace-nowrap w-24">장기 윈도우</label>
-<input class="w-full bg-surface border border-outline-variant rounded px-3 py-1.5 text-on-surface font-data-mono text-data-mono focus:border-primary outline-none text-right" type="number" value="5000"/>
+<input name="long_window" class="w-full bg-surface border border-outline-variant rounded px-3 py-1.5 text-on-surface font-data-mono text-data-mono focus:border-primary outline-none text-right" type="number" value="60"/>
 </div>
 <div class="flex items-center justify-between gap-4">
 <label class="font-label-caps text-label-caps text-on-surface-variant whitespace-nowrap w-24">기울기 계산</label>
-<input class="w-full bg-surface border border-outline-variant rounded px-3 py-1.5 text-on-surface font-data-mono text-data-mono focus:border-primary outline-none text-right" type="number" value="1000"/>
+<input name="slope_window" class="w-full bg-surface border border-outline-variant rounded px-3 py-1.5 text-on-surface font-data-mono text-data-mono focus:border-primary outline-none text-right" type="number" value="30"/>
 </div>
 <div class="flex items-center justify-between gap-4">
 <label class="font-label-caps text-label-caps text-on-surface-variant whitespace-nowrap w-24">스파이크 탐지</label>
@@ -339,9 +339,9 @@
 <button class="w-full bg-transparent hover:bg-surface-container text-on-surface font-body-sm text-body-sm py-2 px-4 rounded border border-outline-variant transition-colors">
                                 기본값으로 되돌리기
                             </button>
-<button class="w-full bg-primary hover:bg-primary-container text-[#051424] font-body-md text-body-md font-bold py-3 px-4 rounded transition-colors mt-2" onclick="document.getElementById('saveModal').classList.remove('hidden')">
-                                변경사항 저장
-                            </button>
+<button type="submit" class="w-full bg-primary hover:bg-primary-container text-[#051424] font-body-md text-body-md font-bold py-3 px-4 rounded transition-colors mt-2">변경사항 저장</button>
+<button type="button" id="settings-rerun" class="w-full bg-tertiary text-on-tertiary font-body-md text-body-md font-bold py-3 px-4 rounded transition-colors">저장 후 재분석</button>
+<input name="random_state" type="hidden" value="42"/>
 </div>
 </div>
 </section>
