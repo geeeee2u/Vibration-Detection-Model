@@ -16,6 +16,7 @@ const percent = value => value == null ? "-" : `${(Number(value) * 100).toFixed(
 const timestamp = value => value ? new Date(value).toLocaleString("ko-KR") : "-";
 const text = (id, value) => { const element = document.getElementById(id); if (element) element.textContent = value; };
 const chartInstances = new Map();
+const ACCESS_DENIED_MESSAGE = "해당 계정으로는 접근할 수 없습니다.";
 
 function showError(message) {
   let target = document.querySelector("[data-api-error]");
@@ -79,6 +80,76 @@ function bindNavigation() {
     const route = Object.entries(routes).find(([label]) => link.textContent.includes(label))?.[1];
     if (route) link.href = route;
   });
+}
+
+async function loadCurrentUser() {
+  try {
+    return await requestJson("/api/auth/me");
+  } catch (error) {
+    if (String(error.message).includes("로그인이 필요")) return null;
+    throw error;
+  }
+}
+
+function accountLabel(user) {
+  if (!user) return "로그인 필요";
+  return `${user.username} · ${user.role}`;
+}
+
+function mountAccountControl(user) {
+  let control = document.querySelector("[data-account-control]");
+  if (!control) {
+    const navigation = document.querySelector("nav");
+    if (!navigation) return;
+    control = document.createElement("button");
+    control.type = "button";
+    control.dataset.accountControl = "";
+    control.className = "mt-auto mx-3 mb-3 border-t border-outline-variant pt-3 text-left text-on-surface-variant hover:text-primary";
+    navigation.append(control);
+  }
+  control.innerHTML = `<span class="material-symbols-outlined align-middle mr-2">account_circle</span><span data-account-label>${accountLabel(user)}</span>`;
+  control.onclick = () => openAccountDialog(user);
+}
+
+function openAccountDialog(user) {
+  document.getElementById("account-dialog")?.remove();
+  const dialog = document.createElement("div");
+  dialog.id = "account-dialog";
+  dialog.className = "fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4";
+  dialog.innerHTML = `<section class="w-full max-w-sm rounded-xl border border-outline-variant bg-surface-container p-6 text-on-surface">
+    <div class="mb-5 flex items-center justify-between"><h2 class="text-xl font-bold">계정 ${user ? "전환" : "로그인"}</h2><button type="button" data-account-close class="text-2xl">×</button></div>
+    <p class="mb-4 text-sm text-on-surface-variant">${user ? `현재 로그인: ${accountLabel(user)}` : "계정으로 로그인하면 권한에 따라 기능을 사용할 수 있습니다."}</p>
+    <form data-login-form class="space-y-3">
+      <label class="block text-sm">ID<input name="username" required autocomplete="username" class="mt-1 w-full rounded border border-outline bg-background p-2" /></label>
+      <label class="block text-sm">비밀번호<input name="password" type="password" required autocomplete="current-password" class="mt-1 w-full rounded border border-outline bg-background p-2" /></label>
+      <p data-login-message class="min-h-5 text-sm text-error"></p>
+      <button class="w-full rounded bg-primary p-2 font-bold text-on-primary" type="submit">로그인</button>
+    </form>
+    ${user ? '<button data-account-logout class="mt-3 w-full rounded border border-outline p-2">로그아웃</button>' : ""}
+  </section>`;
+  document.body.append(dialog);
+  dialog.querySelector("[data-account-close]").onclick = () => dialog.remove();
+  dialog.querySelector("[data-login-form]").addEventListener("submit", async event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const message = dialog.querySelector("[data-login-message]");
+    try {
+      await requestJson("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(form))) });
+      window.location.reload();
+    } catch (error) { message.textContent = error.message; }
+  });
+  dialog.querySelector("[data-account-logout]")?.addEventListener("click", async () => {
+    await requestJson("/api/auth/logout", { method: "POST" });
+    window.location.href = "/";
+  });
+}
+
+function showSettingsAccessDenied(user) {
+  const main = document.querySelector("main");
+  if (!main) return;
+  const message = user ? ACCESS_DENIED_MESSAGE : "모델 설정을 사용하려면 administrator 계정으로 로그인해야 합니다.";
+  main.innerHTML = `<section class="mx-auto mt-16 max-w-xl rounded-xl border border-error bg-error-container/20 p-8 text-center"><span class="material-symbols-outlined text-5xl text-error">lock</span><h2 class="mt-4 text-2xl font-bold">모델 설정 접근 제한</h2><p class="mt-3 text-on-surface-variant">${message}</p><button data-open-account-dialog class="mt-6 rounded bg-primary px-5 py-2 font-bold text-on-primary">계정 전환</button></section>`;
+  main.querySelector("[data-open-account-dialog]").onclick = () => openAccountDialog(user);
 }
 
 async function initializeOverview() {
@@ -168,6 +239,14 @@ async function runPage() {
   if (!initialize) return;
   bindNavigation();
   bindRangeButtons(() => runPage());
-  try { await initialize(); } catch (error) { showError(error.message); }
+  try {
+    const user = await loadCurrentUser();
+    mountAccountControl(user);
+    if (document.body.dataset.page === "settings" && user?.role !== "administrator") {
+      showSettingsAccessDenied(user);
+      return;
+    }
+    await initialize();
+  } catch (error) { showError(error.message); }
 }
 document.addEventListener("DOMContentLoaded", runPage);

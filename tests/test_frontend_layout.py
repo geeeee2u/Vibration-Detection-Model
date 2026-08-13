@@ -33,3 +33,12 @@ def test_each_page_has_static_dashboard_navigation_routes():
         assert navigation, f"{filename} has no navigation"
         for route in expected_routes:
             assert route in navigation.group(0), f"{filename} is missing {route}"
+
+
+def test_frontend_includes_account_switching_and_technician_settings_denial():
+    script = (ROOT / "frontend" / "assets" / "app.js").read_text(encoding="utf-8")
+
+    assert "data-account-control" in script
+    assert "/api/auth/login" in script
+    assert "/api/auth/logout" in script
+    assert "해당 계정으로는 접근할 수 없습니다." in script
