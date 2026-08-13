@@ -1,1 +1,394 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>성능 평가</title><link rel="stylesheet" href="/assets/style.css"><script defer src="/assets/app.js"></script></head><body data-page="performance"><nav><b>VIBRATION SENTINEL</b><a href="/">개요</a><a href="/analysis">진동 분석</a><a href="/alarms">알람 내역</a><a href="/performance">성능 평가</a><a href="/settings">모델 설정</a></nav><main><header><h1>성능 평가</h1></header><div id="content">불러오는 중...</div></main></body></html>
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>성능 평가 - 진동 이상탐지 대시보드</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#d4e4fa",
+                        "primary": "#adc6ff",
+                        "surface-container-high": "#1c2b3c",
+                        "error-container": "#93000a",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-tertiary-fixed": "#2a1700",
+                        "on-surface": "#d4e4fa",
+                        "inverse-primary": "#005ac2",
+                        "primary-container": "#4d8eff",
+                        "background": "#051424",
+                        "surface": "#051424",
+                        "on-primary-container": "#00285d",
+                        "on-secondary-fixed": "#131b2e",
+                        "surface-container-low": "#0d1c2d",
+                        "surface-dim": "#051424",
+                        "surface-container-lowest": "#010f1f",
+                        "surface-variant": "#273647",
+                        "on-primary": "#002e6a",
+                        "secondary-container": "#3f465c",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface-tint": "#adc6ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "inverse-surface": "#d4e4fa",
+                        "tertiary": "#ffb95f",
+                        "outline-variant": "#424754",
+                        "surface-bright": "#2c3a4c",
+                        "outline": "#8c909f",
+                        "secondary-fixed": "#dae2fd",
+                        "tertiary-container": "#ca8100",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-error": "#690005",
+                        "on-surface-variant": "#c2c6d6",
+                        "surface-container-highest": "#273647",
+                        "on-tertiary-container": "#3e2400",
+                        "surface-container": "#122131",
+                        "inverse-on-surface": "#233143",
+                        "on-secondary-container": "#adb4ce",
+                        "error": "#ffb4ab",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-primary-fixed": "#001a42",
+                        "secondary": "#bec6e0",
+                        "on-secondary": "#283044",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "primary-fixed": "#d8e2ff",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-tertiary": "#472a00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "card-padding": "20px",
+                        "container-margin": "24px",
+                        "stack-sm": "8px",
+                        "gutter": "16px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["JetBrains Mono"],
+                        "title-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-mono": ["JetBrains Mono"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-md-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "title-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md-mobile": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .data-mono { font-family: 'JetBrains Mono', monospace; }
+        .chart-grid {
+            background-image: linear-gradient(to right, #1e293b 1px, transparent 1px),
+                              linear-gradient(to bottom, #1e293b 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+<script defer src="/assets/app.js"></script>
+</head>
+<body data-page="performance" class="bg-background text-on-background min-h-screen flex antialiased">
+<!-- SideNavBar -->
+<aside class="docked left-0 top-0 h-full w-60 bg-surface-container-low dark:bg-surface-container-low border-r border-outline-variant flex flex-col py-stack-md hidden md:flex shrink-0">
+<div class="px-container-margin mb-8 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">precision_manufacturing</span>
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface">System Monitor</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Vibration Node 01</p>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1 px-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all active:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-title-sm text-title-sm">개요</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all active:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-title-sm text-title-sm">진동 분석</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all active:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined">notifications_active</span>
+<span class="font-title-sm text-title-sm">알람 내역</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded border-l-4 border-primary bg-surface-container-high text-primary font-bold hover:bg-surface-container-highest transition-all active:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">speed</span>
+<span class="font-title-sm text-title-sm">성능 평가</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all active:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-title-sm text-title-sm">모델 설정</span>
+</a>
+</nav>
+<div class="px-container-margin mt-auto flex flex-col gap-2">
+<button class="w-full flex items-center justify-center gap-2 py-2 border border-outline-variant text-on-surface font-title-sm text-title-sm rounded hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">download</span>
+                Export CSV
+            </button>
+<div class="h-px bg-outline-variant my-2"></div>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="font-title-sm text-title-sm">Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-title-sm text-title-sm">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0">
+<!-- TopAppBar (Mobile & Top Nav Actions) -->
+<header class="docked full-width top-0 z-50 bg-surface-dim dark:bg-surface-dim border-b border-outline-variant dark:border-outline-variant flex justify-between items-center w-full px-container-margin h-16 shrink-0">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-primary hidden md:block">VIBRA-GUARD Industrial</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-surface-container border border-outline-variant rounded-full py-1.5 pl-10 pr-4 text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-all" placeholder="Search data..." type="text"/>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface p-2 rounded-full hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-xl">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-on-surface p-2 rounded-full hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-xl">help</span>
+</button>
+<img alt="Administrator Profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover" data-alt="A futuristic, high-contrast digital avatar for an industrial system administrator. The style is sleek, cybernetic, and metallic, featuring deep navy and bright neon blue accents to match the UI theme. Moody lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAF1cHyVodeZVKTvzZcFCQABeWR_x7Bbf1IdLiiYTzu5lITBL0iCDUasD50OS_LBz2FQY_dfiHtRGNtSIivOh_TK4gSQcdL1viuAMggo1dhsqePawjmdsp1FF8UB6JI29qk-ZQOOG_NaQHPZdQFO9LQpfp7tvYlhGiu2esFgojRPGSjGGAIjuko1NcHIuyGTRdRpUDBvnWIxSDjfD-r2nx_JICUmJ6B0-w7qoJo3felC5T5YAH9AOQ"/>
+</div>
+</header>
+<!-- Canvas -->
+<div class="flex-1 overflow-auto p-container-margin flex flex-col gap-gutter">
+<div class="flex items-center justify-between">
+<h2 class="font-display-lg text-display-lg text-on-surface">성능 평가 대시보드</h2>
+</div>
+<!-- Top Explanation Box -->
+<div class="bg-primary-fixed-dim/10 border border-primary/30 rounded p-4 flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">info</span>
+<p class="font-body-md text-body-md text-primary-fixed">원본 Case1 데이터는 정상 데이터만 포함하므로, 본 성능 평가는 <span class="font-bold">합성 이상 데이터</span>를 이용한 검증 결과입니다. 실제 현장 발생 이상에 대한 정확도와는 다를 수 있습니다.</p>
+</div>
+<!-- Metric Cards Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-gutter">
+<div class="bg-surface-container rounded border border-outline-variant p-card-padding flex flex-col gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">정상 구간 오탐지율 (FPR)</span>
+<div id="performance-fpr" class="font-display-lg text-display-lg text-tertiary">-</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">매우 우수</span>
+</div>
+<div class="bg-surface-container rounded border border-outline-variant p-card-padding flex flex-col gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">전체 합성 이상 탐지율 (Recall)</span>
+<div id="performance-recall" class="font-display-lg text-display-lg text-primary">-</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">기준치 초과</span>
+</div>
+<div class="bg-surface-container rounded border border-outline-variant p-card-padding flex flex-col gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">패턴별: 스파이크</span>
+<div class="font-display-lg text-display-lg text-on-surface">98.5%</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">강점 영역</span>
+</div>
+<div class="bg-surface-container rounded border border-outline-variant p-card-padding flex flex-col gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">패턴별: 변동성 증가</span>
+<div class="font-display-lg text-display-lg text-on-surface">95.0%</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">안정적 탐지</span>
+</div>
+<div class="bg-surface-container rounded border border-outline-variant p-card-padding flex flex-col gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">패턴별: 미세 증가 (1~5%)</span>
+<div class="font-display-lg text-display-lg text-error">42.0%</div>
+<span class="font-body-sm text-body-sm text-error">취약 영역 (주의)</span>
+</div>
+</div>
+<!-- Complex Layout Area -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-gutter">
+<!-- Evaluation Table -->
+<div class="xl:col-span-2 bg-surface-container rounded border border-outline-variant flex flex-col">
+<div class="p-card-padding border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-title-sm text-title-sm text-on-surface">상세 패턴별 평가 결과</h3>
+<button class="text-primary hover:text-primary-container font-label-caps text-label-caps flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-sm">download</span> CSV
+                        </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high border-b border-outline-variant">
+<th class="p-3 font-label-caps text-label-caps text-on-surface-variant">이상 유형</th>
+<th class="p-3 font-label-caps text-label-caps text-on-surface-variant text-right">삽입 데이터 수</th>
+<th class="p-3 font-label-caps text-label-caps text-on-surface-variant text-right">탐지 수</th>
+<th class="p-3 font-label-caps text-label-caps text-on-surface-variant text-right">탐지율</th>
+<th class="p-3 font-label-caps text-label-caps text-on-surface-variant text-center">평가 상태</th>
+</tr>
+</thead>
+<tbody id="performance-pattern-rows" class="font-data-mono text-data-mono">
+<tr class="border-b border-outline-variant hover:bg-surface-variant/30 transition-colors">
+<td class="p-3 text-on-surface">반복 스파이크 (충격파)</td>
+<td class="p-3 text-right text-on-surface-variant">1,200</td>
+<td class="p-3 text-right text-on-surface-variant">1,182</td>
+<td class="p-3 text-right text-primary">98.5%</td>
+<td class="p-3 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded bg-primary/20 text-primary border border-primary/30 font-label-caps text-[10px]">우수</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-variant/30 transition-colors">
+<td class="p-3 text-on-surface">표준편차 (변동성) 증가</td>
+<td class="p-3 text-right text-on-surface-variant">2,500</td>
+<td class="p-3 text-right text-on-surface-variant">2,375</td>
+<td class="p-3 text-right text-primary">95.0%</td>
+<td class="p-3 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded bg-primary/20 text-primary border border-primary/30 font-label-caps text-[10px]">우수</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-variant/30 transition-colors">
+<td class="p-3 text-on-surface">독립 랜덤 이상 (노이즈)</td>
+<td class="p-3 text-right text-on-surface-variant">800</td>
+<td class="p-3 text-right text-on-surface-variant">720</td>
+<td class="p-3 text-right text-on-surface">90.0%</td>
+<td class="p-3 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded bg-surface-variant text-on-surface border border-outline-variant font-label-caps text-[10px]">양호</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-variant/30 transition-colors">
+<td class="p-3 text-on-surface">서서히 증가 (Trend)</td>
+<td class="p-3 text-right text-on-surface-variant">3,000</td>
+<td class="p-3 text-right text-on-surface-variant">2,250</td>
+<td class="p-3 text-right text-tertiary">75.0%</td>
+<td class="p-3 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded bg-tertiary/20 text-tertiary border border-tertiary/30 font-label-caps text-[10px]">보통</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-variant/30 transition-colors">
+<td class="p-3 text-on-surface">1~5% 미세 증가</td>
+<td class="p-3 text-right text-on-surface-variant">1,500</td>
+<td class="p-3 text-right text-on-surface-variant">630</td>
+<td class="p-3 text-right text-error font-bold">42.0%</td>
+<td class="p-3 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded bg-error/20 text-error border border-error/30 font-label-caps text-[10px]">낮음</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Detection Rate Bar Chart & Limitations -->
+<div class="flex flex-col gap-gutter">
+<div class="bg-surface-container rounded border border-outline-variant p-card-padding flex-1">
+<h3 class="font-title-sm text-title-sm text-on-surface mb-4">유형별 탐지율 시각화</h3>
+<div class="flex flex-col gap-3">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-caps text-[10px] text-on-surface-variant">
+<span>스파이크</span><span>98%</span>
+</div>
+<div class="w-full bg-surface-variant rounded h-2 overflow-hidden">
+<div class="bg-primary h-full rounded" style="width: 98%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-caps text-[10px] text-on-surface-variant">
+<span>변동성</span><span>95%</span>
+</div>
+<div class="w-full bg-surface-variant rounded h-2 overflow-hidden">
+<div class="bg-primary h-full rounded" style="width: 95%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-caps text-[10px] text-on-surface-variant">
+<span>독립랜덤</span><span>90%</span>
+</div>
+<div class="w-full bg-surface-variant rounded h-2 overflow-hidden">
+<div class="bg-primary h-full rounded" style="width: 90%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-caps text-[10px] text-on-surface-variant">
+<span>서서히 증가</span><span>75%</span>
+</div>
+<div class="w-full bg-surface-variant rounded h-2 overflow-hidden">
+<div class="bg-tertiary h-full rounded" style="width: 75%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-caps text-[10px] text-error">
+<span>1~5% 증가 (Low)</span><span>42%</span>
+</div>
+<div class="w-full bg-surface-variant rounded h-2 overflow-hidden">
+<div class="bg-error h-full rounded" style="width: 42%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-high rounded border border-outline-variant p-card-padding">
+<h3 class="font-title-sm text-title-sm text-on-surface flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-tertiary">warning</span>
+                            모델 한계점 요약
+                        </h3>
+<ul class="list-disc list-inside font-body-sm text-body-sm text-on-surface-variant space-y-1">
+<li>스파이크 및 큰 변동성 탐지에 강점이 있습니다.</li>
+<li><span class="text-error font-bold">1~5% 수준의 미세한 증가 패턴</span> 탐지율이 낮습니다.</li>
+<li>합성 데이터 기반 평가이므로 실제 현장 검증이 필수적입니다.</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Synthetic Anomaly Pattern Panels (Chart Mockups) -->
+<div class="bg-surface-container rounded border border-outline-variant p-card-padding">
+<h3 class="font-title-sm text-title-sm text-on-surface mb-4">합성 이상 패턴 주입 예시</h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Chart 1 -->
+<div class="border border-outline-variant rounded bg-surface p-2 flex flex-col gap-2">
+<span class="font-label-caps text-[10px] text-on-surface-variant text-center">반복 스파이크 주입</span>
+<div class="h-24 w-full chart-grid relative overflow-hidden">
+<!-- Abstract line chart representation -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<polyline fill="none" points="0,50 20,52 30,48 40,55 45,10 50,90 55,50 70,49 80,51 100,50" stroke="#adc6ff" stroke-width="1.5"></polyline>
+<rect fill="rgba(255, 180, 171, 0.1)" height="100" stroke="#ef4444" stroke-dasharray="2,2" stroke-width="0.5" width="20" x="40" y="0"></rect>
+</svg>
+</div>
+</div>
+<!-- Chart 2 -->
+<div class="border border-outline-variant rounded bg-surface p-2 flex flex-col gap-2">
+<span class="font-label-caps text-[10px] text-on-surface-variant text-center">표준편차 증가 주입</span>
+<div class="h-24 w-full chart-grid relative overflow-hidden">
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<polyline fill="none" points="0,50 10,48 20,52 30,50 40,50 45,20 50,80 55,10 60,90 65,50 80,48 100,50" stroke="#adc6ff" stroke-width="1.5"></polyline>
+<rect fill="rgba(255, 180, 171, 0.1)" height="100" stroke="#ef4444" stroke-dasharray="2,2" stroke-width="0.5" width="30" x="40" y="0"></rect>
+</svg>
+</div>
+</div>
+<!-- Chart 3 -->
+<div class="border border-outline-variant rounded bg-surface p-2 flex flex-col gap-2">
+<span class="font-label-caps text-[10px] text-on-surface-variant text-center">서서히 증가 (Trend) 주입</span>
+<div class="h-24 w-full chart-grid relative overflow-hidden">
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<polyline fill="none" points="0,70 20,72 40,70 50,65 60,55 70,45 80,35 100,30" stroke="#adc6ff" stroke-width="1.5"></polyline>
+<rect fill="rgba(255, 185, 95, 0.1)" height="100" stroke="#ffb95f" stroke-dasharray="2,2" stroke-width="0.5" width="60" x="40" y="0"></rect>
+</svg>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

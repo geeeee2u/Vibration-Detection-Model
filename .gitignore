@@ -16,6 +16,7 @@ tmp/
 *.pdf
 *.pptx
 stitch_vibration_insight_analysis_dashboard/
+stitch_vibration_insight_analysis_dashboard.zip
 
 # Local isolated development worktrees
 .worktrees/

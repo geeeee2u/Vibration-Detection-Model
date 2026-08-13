@@ -23,6 +23,17 @@ python -m uvicorn backend.main:app --reload
 
 처음 실행했거나 분석 결과가 없으면 **모델 설정** 페이지에서 `저장 후 재분석`을 누르세요. `AI Model Raw Data.xlsx`의 `Case1` 데이터를 다시 분석한 뒤 웹 화면에 반영합니다. 분석 결과 CSV와 로컬 모델 설정은 실행 산출물이므로 GitHub에 저장하지 않습니다.
 
+### Stitch 레이아웃을 바꾸는 방법
+
+Google Stitch에서 새 HTML을 추출하면 로컬 `stitch_vibration_insight_analysis_dashboard/` 폴더에 보관합니다. 실제 웹에서 제공되는 화면은 `frontend/`의 `overview.html`, `analysis.html`, `alarms.html`, `performance.html`, `settings.html`입니다. 새 추출본을 반영할 때는 각 화면의 레이아웃과 Tailwind 설정은 유지하되, 다음 연결 요소를 지워서는 안 됩니다.
+
+- `<body data-page="...">` 페이지 식별자
+- `/assets/app.js` 스크립트
+- 실제 수치·차트·표에 사용되는 `id` 속성
+- `/`, `/analysis`, `/alarms`, `/performance`, `/settings` 사이드바 링크
+
+`runtime/`, 분석 결과 CSV, 합성 성능 결과, 로컬 Stitch ZIP 내보내기 파일은 실행 또는 디자인 산출물이므로 GitHub에 올리지 않습니다.
+
 ## 실행
 
 ```powershell
