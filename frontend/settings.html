@@ -3,381 +3,287 @@
 <html class="dark" lang="ko"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>모델 설정 - Industrial Sentinel</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<title>Industrial Sentinel - 모델 설정</title>
+<!-- Material Symbols -->
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     "colors": {
-                        "on-secondary-fixed": "#131b2e",
-                        "surface-container-highest": "#273647",
-                        "on-tertiary": "#472a00",
-                        "surface-container-low": "#0d1c2d",
-                        "on-tertiary-fixed-variant": "#653e00",
-                        "tertiary-container": "#ca8100",
-                        "outline-variant": "#424754",
-                        "surface-tint": "#adc6ff",
-                        "on-secondary-fixed-variant": "#3f465c",
-                        "secondary-fixed-dim": "#bec6e0",
-                        "secondary": "#bec6e0",
-                        "tertiary-fixed": "#ffddb8",
-                        "error": "#ffb4ab",
-                        "surface-dim": "#051424",
-                        "on-primary-container": "#00285d",
-                        "surface-variant": "#273647",
-                        "inverse-primary": "#005ac2",
-                        "secondary-fixed": "#dae2fd",
-                        "on-background": "#d4e4fa",
-                        "on-secondary": "#283044",
-                        "surface-container": "#122131",
-                        "primary-fixed": "#d8e2ff",
-                        "on-surface": "#d4e4fa",
-                        "inverse-surface": "#d4e4fa",
-                        "background": "#051424",
-                        "surface-container-high": "#1c2b3c",
-                        "primary-container": "#4d8eff",
-                        "primary": "#adc6ff",
-                        "error-container": "#93000a",
-                        "on-error": "#690005",
-                        "on-tertiary-fixed": "#2a1700",
-                        "on-primary-fixed-variant": "#004395",
-                        "secondary-container": "#3f465c",
-                        "on-tertiary-container": "#3e2400",
-                        "on-primary-fixed": "#001a42",
-                        "surface": "#051424",
-                        "tertiary-fixed-dim": "#ffb95f",
-                        "tertiary": "#ffb95f",
-                        "on-primary": "#002e6a",
-                        "primary-fixed-dim": "#adc6ff",
-                        "on-surface-variant": "#c2c6d6",
-                        "on-secondary-container": "#adb4ce",
-                        "on-error-container": "#ffdad6",
-                        "surface-container-lowest": "#010f1f",
-                        "surface-bright": "#2c3a4c",
-                        "outline": "#8c909f",
-                        "inverse-on-surface": "#233143"
+                            "on-primary-fixed": "#001a42",
+                            "error": "#ffb4ab",
+                            "on-primary": "#002e6a",
+                            "tertiary-fixed": "#ffddb8",
+                            "on-surface": "#d4e4fa",
+                            "surface-tint": "#adc6ff",
+                            "secondary-container": "#3f465c",
+                            "secondary-fixed": "#dae2fd",
+                            "error-container": "#93000a",
+                            "on-error": "#690005",
+                            "primary": "#adc6ff",
+                            "primary-container": "#4d8eff",
+                            "surface-container": "#122131",
+                            "on-background": "#d4e4fa",
+                            "surface-container-lowest": "#010f1f",
+                            "on-secondary": "#283044",
+                            "on-primary-fixed-variant": "#004395",
+                            "surface": "#051424",
+                            "on-error-container": "#ffdad6",
+                            "inverse-primary": "#005ac2",
+                            "outline-variant": "#424754",
+                            "on-secondary-fixed-variant": "#3f465c",
+                            "on-secondary-container": "#adb4ce",
+                            "tertiary-fixed-dim": "#ffb95f",
+                            "surface-container-high": "#1c2b3c",
+                            "on-tertiary-fixed-variant": "#653e00",
+                            "on-surface-variant": "#c2c6d6",
+                            "surface-container-low": "#0d1c2d",
+                            "primary-fixed-dim": "#adc6ff",
+                            "surface-container-highest": "#273647",
+                            "inverse-on-surface": "#233143",
+                            "on-tertiary": "#472a00",
+                            "on-tertiary-container": "#3e2400",
+                            "on-primary-container": "#00285d",
+                            "tertiary-container": "#ca8100",
+                            "surface-dim": "#051424",
+                            "on-secondary-fixed": "#131b2e",
+                            "outline": "#8c909f",
+                            "primary-fixed": "#d8e2ff",
+                            "background": "#051424",
+                            "tertiary": "#ffb95f",
+                            "inverse-surface": "#d4e4fa",
+                            "surface-bright": "#2c3a4c",
+                            "secondary": "#bec6e0",
+                            "surface-variant": "#273647",
+                            "on-tertiary-fixed": "#2a1700",
+                            "secondary-fixed-dim": "#bec6e0"
                     },
                     "borderRadius": {
-                        "DEFAULT": "0.125rem",
-                        "lg": "0.25rem",
-                        "xl": "0.5rem",
-                        "full": "0.75rem"
+                            "DEFAULT": "0.125rem",
+                            "lg": "0.25rem",
+                            "xl": "0.5rem",
+                            "full": "0.75rem"
                     },
                     "spacing": {
-                        "unit": "4px",
-                        "gutter": "16px",
-                        "card-padding": "20px",
-                        "container-margin": "24px",
-                        "stack-md": "16px",
-                        "stack-sm": "8px"
+                            "stack-sm": "8px",
+                            "gutter": "16px",
+                            "container-margin": "24px",
+                            "card-padding": "20px",
+                            "stack-md": "16px",
+                            "unit": "4px"
                     },
                     "fontFamily": {
-                        "headline-md-mobile": ["Inter"],
-                        "body-md": ["Inter"],
-                        "body-sm": ["Inter"],
-                        "label-caps": ["JetBrains Mono"],
-                        "data-mono": ["JetBrains Mono"],
-                        "headline-md": ["Inter"],
-                        "display-lg": ["Inter"],
-                        "title-sm": ["Inter"]
+                            "headline-md": ["Inter"],
+                            "body-md": ["Inter"],
+                            "body-sm": ["Inter"],
+                            "label-caps": ["JetBrains Mono"],
+                            "data-mono": ["JetBrains Mono"],
+                            "title-sm": ["Inter"],
+                            "headline-md-mobile": ["Inter"],
+                            "display-lg": ["Inter"]
                     },
                     "fontSize": {
-                        "headline-md-mobile": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
-                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
-                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
-                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
-                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
-                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
-                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-                        "title-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+                            "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                            "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                            "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                            "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                            "title-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                            "headline-md-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                            "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
                     }
-                }
+                },
             }
         }
     </script>
-<script defer src="/assets/app.js"></script>
-</head>
-<body data-page="settings" class="bg-background text-on-surface min-h-screen font-body-md text-body-md antialiased overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
-<!-- TopNavBar -->
-<div class="hidden md:flex justify-between items-center w-full px-gutter ml-60 max-w-[calc(100%-240px)] bg-surface dark:bg-surface border-b border-outline-variant docked full-width top-0 h-16 fixed z-40">
+<style>
+        body { background-color: #051424; color: #d4e4fa; }
+        .material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; font-size: 24px; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-smoothing: antialiased; }
+        input[type="range"] { -webkit-appearance: none; background: transparent; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #adc6ff; cursor: pointer; margin-top: -6px; }
+        input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #3f465c; border-radius: 2px; }
+        
+        .toggle-checkbox:checked { right: 0; border-color: #adc6ff; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #4d8eff; }
+    </style>
+<script defer src="/assets/app.js"></script></head>
+<body data-page="settings" class="bg-background font-body-md antialiased text-on-surface">
+<!-- TopAppBar -->
+<header class="bg-surface-container dark:bg-surface-container fixed top-0 right-0 h-16 w-[calc(100%-240px)] border-b border-outline-variant z-50">
+<div class="flex justify-between items-center px-gutter h-full">
 <div class="flex items-center gap-4">
-<span class="font-title-sm text-title-sm font-bold text-on-surface">진동 탐지 모델</span>
+<span class="font-title-sm text-title-sm text-primary">진동 감지 모델</span>
 </div>
 <div class="flex items-center gap-4">
-<div class="relative text-on-surface-variant">
-<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2" style="font-variation-settings: 'FILL' 0;">search</span>
-<input class="bg-surface-container-high border border-outline-variant rounded text-on-surface pl-8 pr-3 py-1 text-sm focus:outline-none focus:border-primary placeholder:text-on-surface-variant" placeholder="검색..." type="text"/>
-</div>
-<button class="text-on-surface-variant hover:bg-surface-container-highest rounded-full p-2 transition-transform hover:scale-95">
-<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-2 rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined" data-icon="search" style="font-variation-settings: 'FILL' 0;">search</span>
 </button>
-<button class="text-on-surface-variant hover:bg-surface-container-highest rounded-full p-2 transition-transform hover:scale-95">
-<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-2 rounded-full hover:bg-surface-container-high relative">
+<span class="material-symbols-outlined" data-icon="notifications" style="font-variation-settings: 'FILL' 0;">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
 </button>
 </div>
 </div>
+</header>
 <!-- SideNavBar -->
-<nav class="hidden md:flex flex-col h-full py-4 space-y-2 w-60 fixed left-0 top-0 border-r border-outline-variant bg-surface-container dark:bg-surface-container z-50">
-<div class="px-6 mb-8 mt-2">
-<div class="flex items-center gap-3 mb-2">
-<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center shrink-0">
-<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<nav class="bg-surface dark:bg-surface fixed left-0 top-0 h-full w-[240px] border-r border-outline-variant z-50 flex flex-col justify-between py-container-margin">
+<div>
+<div class="px-container-margin mb-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined text-[20px]" data-icon="industrial_sensor_icon">precision_manufacturing</span>
 </div>
 <div>
-<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed truncate" title="Industrial Sentinel">Industrial Sentinel</h1>
-<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Isolation Forest v2.4</p>
+<div class="font-headline-md text-headline-md text-on-surface font-bold text-lg leading-tight">Industrial Sentinel</div>
+<div class="text-on-surface-variant text-xs mt-1 font-label-caps">Isolation Forest v2.4</div>
 </div>
 </div>
 </div>
-<div class="flex flex-col space-y-1 px-3">
-<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="/">
-<span class="material-symbols-outlined mr-4" data-icon="dashboard">dashboard</span>
-<span class="font-label-caps text-label-caps">개요</span>
+<ul class="flex flex-col space-y-1">
+<li>
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="/">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>개요</span>
 </a>
-<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="/analysis">
-<span class="material-symbols-outlined mr-4" data-icon="analytics">analytics</span>
-<span class="font-label-caps text-label-caps">진동 분석</span>
+</li>
+<li>
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="/analysis">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>진동 분석</span>
 </a>
-<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="/alarms">
-<span class="material-symbols-outlined mr-4" data-icon="notifications_active">notifications_active</span>
-<span class="font-label-caps text-label-caps">경보 이력</span>
+</li>
+<li>
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="/alarms">
+<span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span>
+<span>알람 내역</span>
 </a>
-<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="/performance">
-<span class="material-symbols-outlined mr-4" data-icon="query_stats">query_stats</span>
-<span class="font-label-caps text-label-caps">성능 평가</span>
+</li>
+<li>
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="/performance">
+<span class="material-symbols-outlined" data-icon="speed">speed</span>
+<span>성능 평가</span>
 </a>
-<a class="flex items-center px-4 py-3 rounded-lg text-primary border-l-4 border-primary bg-secondary-container/30 font-bold scale-[0.99]" href="/settings">
-<span class="material-symbols-outlined mr-4 text-primary" data-icon="settings" style="font-variation-settings: 'FILL' 1;">settings</span>
-<span class="font-label-caps text-label-caps text-primary">모델 설정</span>
+</li>
+<li>
+<a class="flex items-center gap-3 py-3 px-4 bg-secondary-container text-primary font-bold border-l-4 border-primary opacity-90 transition-all duration-150" href="/settings">
+<span class="material-symbols-outlined" data-icon="settings" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span>모델 설정</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="px-4 border-t border-outline-variant pt-4">
+<a class="flex items-center gap-3 py-2 px-2 text-on-surface-variant hover:text-on-surface transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="account_circle">account_circle</span>
+<span class="font-body-sm text-body-sm text-sm">관리자 · administrator</span>
 </a>
 </div>
 </nav>
 <!-- Main Content -->
-<main class="md:ml-60 pt-20 p-container-margin md:p-8 max-w-7xl mx-auto space-y-stack-md">
-<!-- Top Warning -->
-<div class="bg-error-container/20 border border-error/50 rounded-lg p-4 flex items-start gap-3">
-<span class="material-symbols-outlined text-error mt-0.5" style="font-variation-settings: 'FILL' 1;">warning</span>
+<main class="ml-[240px] pt-16 min-h-screen p-container-margin">
+<div class="max-w-[1152px] mx-auto">
+<!-- Warning Banner -->
+<div class="bg-error-container/20 border border-error/30 rounded-lg p-4 mb-container-margin flex gap-4 items-start">
+<span class="material-symbols-outlined text-error shrink-0 mt-0.5">warning</span>
 <div>
-<h3 class="font-title-sm text-title-sm text-error mb-1">경고: 모델 파라미터 변경</h3>
-<p class="font-body-sm text-body-sm text-error/90">설정 변경은 이상 탐지 결과와 경보 수에 직접적인 영향을 줄 수 있습니다. 실시간 적용 전 반드시 미리보기를 통해 영향을 확인하세요.</p>
+<h3 class="font-title-sm text-error mb-1">경고</h3>
+<p class="font-body-sm text-on-surface-variant">설정 변경은 이상 탐지 결과와 경보 수에 직접적인 영향을 줄 수 있습니다. 모델 튜닝 전 반드시 성능 평가 지표를 확인하시기 바랍니다.</p>
 </div>
 </div>
-<form id="settings-form" class="grid grid-cols-1 lg:grid-cols-3 gap-stack-md">
-<!-- Left Column: Settings -->
-<div class="lg:col-span-2 flex flex-col gap-stack-md">
-<!-- Section 1: 현재 모델 상태 -->
-<section class="bg-surface-container border border-outline-variant rounded-xl p-card-padding">
-<h2 class="font-title-sm text-title-sm mb-4 text-primary-fixed flex items-center gap-2">
-<span class="material-symbols-outlined text-[1.2rem]">memory</span>
-                        현재 모델 상태
-                    </h2>
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-<div class="bg-surface rounded p-3 border border-outline-variant/50">
-<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">상태</span>
-<div class="flex items-center gap-2">
-<span class="w-2 h-2 rounded-full bg-green-500"></span>
-<span class="font-data-mono text-data-mono">활성 (Running)</span>
+<!-- Page Title & Actions -->
+<div class="flex justify-between items-center mb-6">
+<div>
+<h1 class="font-headline-md text-headline-md">모델 파라미터 설정</h1>
+<p class="font-body-sm text-on-surface-variant mt-1">Isolation Forest 알고리즘의 동작 인자를 조정합니다.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 border border-outline-variant rounded text-on-surface hover:bg-surface-variant transition-colors font-body-sm">
+                        미리보기
+                    </button>
+<button class="px-4 py-2 border border-outline-variant rounded text-on-surface hover:bg-surface-variant transition-colors font-body-sm">
+                        되돌리기
+                    </button>
+<button class="px-4 py-2 bg-primary-container text-on-primary-container rounded hover:bg-primary transition-colors font-body-sm font-semibold">
+                        저장
+                    </button>
 </div>
 </div>
-<div class="bg-surface rounded p-3 border border-outline-variant/50">
-<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">버전</span>
-<span class="font-data-mono text-data-mono">v2.4.1 (Stable)</span>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-container-margin">
+<!-- Left Column (Parameters) -->
+<div class="lg:col-span-2 space-y-container-margin">
+<!-- Section 2: Isolation Forest Parameters -->
+<section class="bg-surface-container-low border border-outline-variant rounded-lg p-card-padding">
+<h2 class="font-title-sm mb-4 border-b border-outline-variant pb-2">Isolation Forest Parameters</h2>
+<div class="space-y-6">
+<!-- Parameter Item -->
+<div>
+<div class="flex justify-between mb-1">
+<label class="font-body-sm font-medium text-on-surface">n_estimators (트리 개수)</label>
+<span class="font-data-mono text-primary">150</span>
 </div>
-<div class="bg-surface rounded p-3 border border-outline-variant/50">
-<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">마지막 업데이트</span>
-<span class="font-data-mono text-data-mono">2023-10-24 09:12</span>
+<input class="w-full" max="500" min="50" type="range" value="150"/>
+<p class="text-xs text-on-surface-variant mt-1">기본값: 100. 더 많은 트리는 안정적인 결과를 제공하지만 연산 비용이 증가합니다.</p>
 </div>
-<div class="bg-surface rounded p-3 border border-outline-variant/50">
-<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">기본 임계값(Quantile)</span>
-<span class="font-data-mono text-data-mono text-primary">0.9950</span>
+<!-- Parameter Item -->
+<div>
+<div class="flex justify-between mb-1">
+<label class="font-body-sm font-medium text-on-surface">threshold_quantile (이상치 비율)</label>
+<span class="font-data-mono text-primary">0.015</span>
+</div>
+<input class="w-full" max="0.1" min="0.001" step="0.001" type="range" value="0.015"/>
+<p class="text-xs text-on-surface-variant mt-1">학습 데이터 내 이상치의 예상 비율입니다. 높을수록 더 많은 알람이 발생합니다.</p>
 </div>
 </div>
 </section>
-<!-- Section 2 & 3: Isolation Forest & Windows (Bento) -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
-<!-- Section 2: IF Settings -->
-<section class="bg-surface-container border border-outline-variant rounded-xl p-card-padding">
-<h2 class="font-title-sm text-title-sm mb-4 text-on-surface flex items-center gap-2">
-<span class="material-symbols-outlined text-[1.2rem]">forest</span>
-                            Isolation Forest 설정
-                        </h2>
-<div class="space-y-4">
+<!-- Section 3: Feature Window Settings -->
+<section class="bg-surface-container-low border border-outline-variant rounded-lg p-card-padding">
+<h2 class="font-title-sm mb-4 border-b border-outline-variant pb-2">Feature Window Configuration</h2>
+<div class="grid grid-cols-2 gap-4">
 <div>
-<label class="flex justify-between font-label-caps text-label-caps mb-1">
-<span class="text-on-surface-variant">트리 개수</span>
-<span class="text-primary font-data-mono text-data-mono">200</span>
-</label>
-<input name="n_estimators" class="w-full accent-primary bg-surface h-2 rounded-full appearance-none" max="1000" min="100" step="50" type="range" value="300"/>
-<div class="flex justify-between text-xs text-on-surface-variant mt-1">
-<span>100</span><span>1000</span>
-</div>
-</div>
-<div>
-<label class="flex justify-between font-label-caps text-label-caps mb-1">
-<span class="text-on-surface-variant">이상 점수 임계값 분위수</span>
-<span class="text-primary font-data-mono text-data-mono">0.9950</span>
-</label>
-<input name="threshold_quantile" class="w-full bg-surface border border-outline-variant rounded px-3 py-2 text-on-surface font-data-mono text-data-mono focus:border-primary focus:ring-1 focus:ring-primary outline-none" max="0.9999" min="0.9000" step="0.0001" type="number" value="0.999"/>
+<label class="block font-body-sm mb-1">Short Window (sec)</label>
+<input class="w-full bg-surface border border-outline-variant rounded px-3 py-2 font-data-mono text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none" type="number" value="10"/>
 </div>
 <div>
-<label class="flex justify-between font-label-caps text-label-caps mb-1">
-<span class="text-on-surface-variant">확정 경보 지속시간</span>
-<span class="text-primary font-data-mono text-data-mono">3.0</span>
-</label>
-<input name="persistence_seconds" class="w-full accent-primary bg-surface h-2 rounded-full appearance-none" max="60" min="1" step="1" type="range" value="5"/>
-</div>
-</div>
-</section>
-<!-- Section 3: Feature Windows -->
-<section class="bg-surface-container border border-outline-variant rounded-xl p-card-padding">
-<h2 class="font-title-sm text-title-sm mb-4 text-on-surface flex items-center gap-2">
-<span class="material-symbols-outlined text-[1.2rem]">view_timeline</span>
-                            특징 윈도우 설정
-                        </h2>
-<div class="space-y-4">
-<div class="flex items-center justify-between gap-4">
-<label class="font-label-caps text-label-caps text-on-surface-variant whitespace-nowrap w-24">단기 윈도우</label>
-<input name="short_window" class="w-full bg-surface border border-outline-variant rounded px-3 py-1.5 text-on-surface font-data-mono text-data-mono focus:border-primary outline-none text-right" type="number" value="15"/>
-</div>
-<div class="flex items-center justify-between gap-4">
-<label class="font-label-caps text-label-caps text-on-surface-variant whitespace-nowrap w-24">장기 윈도우</label>
-<input name="long_window" class="w-full bg-surface border border-outline-variant rounded px-3 py-1.5 text-on-surface font-data-mono text-data-mono focus:border-primary outline-none text-right" type="number" value="60"/>
-</div>
-<div class="flex items-center justify-between gap-4">
-<label class="font-label-caps text-label-caps text-on-surface-variant whitespace-nowrap w-24">기울기 계산</label>
-<input name="slope_window" class="w-full bg-surface border border-outline-variant rounded px-3 py-1.5 text-on-surface font-data-mono text-data-mono focus:border-primary outline-none text-right" type="number" value="30"/>
-</div>
-<div class="flex items-center justify-between gap-4">
-<label class="font-label-caps text-label-caps text-on-surface-variant whitespace-nowrap w-24">스파이크 탐지</label>
-<input class="w-full bg-surface border border-outline-variant rounded px-3 py-1.5 text-on-surface font-data-mono text-data-mono focus:border-primary outline-none text-right" type="number" value="100"/>
+<label class="block font-body-sm mb-1">Long Window (sec)</label>
+<input class="w-full bg-surface border border-outline-variant rounded px-3 py-2 font-data-mono text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none" type="number" value="300"/>
 </div>
 </div>
 </section>
 </div>
-<!-- Section 4: Pattern Rules -->
-<section class="bg-surface-container border border-outline-variant rounded-xl p-card-padding overflow-hidden flex flex-col">
-<h2 class="font-title-sm text-title-sm mb-4 text-on-surface flex items-center gap-2">
-<span class="material-symbols-outlined text-[1.2rem]">rule</span>
-                        유형별 패턴 규칙
-                    </h2>
-<p class="font-body-sm text-body-sm text-on-surface-variant mb-3">현재 모델에서 지원하지 않음</p>
-<div class="overflow-x-auto -mx-card-padding px-card-padding">
-<table class="w-full text-left border-collapse min-w-[500px]">
-<thead>
-<tr class="bg-surface font-label-caps text-label-caps text-on-surface-variant border-y border-outline-variant">
-<th class="p-3 font-medium">유형</th>
-<th class="p-3 font-medium">활성화</th>
-<th class="p-3 font-medium">민감도 (가중치)</th>
-<th class="p-3 font-medium">최소 지속시간(s)</th>
-</tr>
-</thead>
-<tbody class="font-data-mono text-data-mono">
-<tr class="border-b border-outline-variant/50 hover:bg-surface-container-high transition-colors">
-<td class="p-3 text-on-surface">충격 (Impulse)</td>
-<td class="p-3">
-<div class="relative inline-block w-10 h-5 align-middle select-none">
-<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-primary bg-primary transition-transform duration-200 ease-in-out translate-x-5" type="checkbox"/>
-<label class="toggle-label block overflow-hidden h-5 rounded-full bg-primary/20 cursor-pointer"></label>
-</div>
-</td>
-<td class="p-3"><input class="bg-surface border border-outline-variant rounded px-2 py-1 w-20 text-right focus:border-primary outline-none" step="0.1" type="number" value="1.5"/></td>
-<td class="p-3"><input class="bg-surface border border-outline-variant rounded px-2 py-1 w-20 text-right focus:border-primary outline-none" step="0.1" type="number" value="0.5"/></td>
-</tr>
-<tr class="border-b border-outline-variant/50 hover:bg-surface-container-high transition-colors">
-<td class="p-3 text-on-surface">지속 마모 (Continuous)</td>
-<td class="p-3">
-<div class="relative inline-block w-10 h-5 align-middle select-none">
-<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-primary bg-primary transition-transform duration-200 ease-in-out translate-x-5" type="checkbox"/>
-<label class="toggle-label block overflow-hidden h-5 rounded-full bg-primary/20 cursor-pointer"></label>
-</div>
-</td>
-<td class="p-3"><input class="bg-surface border border-outline-variant rounded px-2 py-1 w-20 text-right focus:border-primary outline-none" step="0.1" type="number" value="1.0"/></td>
-<td class="p-3"><input class="bg-surface border border-outline-variant rounded px-2 py-1 w-20 text-right focus:border-primary outline-none" step="1.0" type="number" value="5.0"/></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-</div>
-<!-- Right Column: Preview & Actions -->
-<div class="flex flex-col gap-stack-md">
-<!-- Section 5: Preview -->
-<section class="bg-surface-container border border-outline-variant rounded-xl p-card-padding flex-grow flex flex-col">
-<h2 class="font-title-sm text-title-sm mb-4 text-on-surface flex items-center gap-2">
-<span class="material-symbols-outlined text-[1.2rem]">preview</span>
-                        설정 영향 미리보기
-                        <span class="ml-auto text-[10px] bg-surface-container-highest px-2 py-1 rounded text-on-surface-variant font-label-caps uppercase tracking-wider">시뮬레이션</span>
-</h2>
-<div class="bg-surface rounded border border-outline-variant/50 p-4 mb-4">
-<p class="font-label-caps text-label-caps text-on-surface-variant mb-2">예상 경보 발생 수 (최근 7일 데이터 기준)</p>
-<div class="flex items-end gap-3">
-<span class="font-display-lg text-display-lg text-error">42</span>
-<span class="font-body-sm text-body-sm text-on-surface-variant mb-1 line-through">이전: 12</span>
-<span class="font-label-caps text-label-caps text-error mb-1 ml-auto bg-error/10 px-2 py-0.5 rounded">+250% 증가</span>
+<!-- Right Column (Preview & Stats) -->
+<div class="space-y-container-margin">
+<!-- Preview Section -->
+<section class="bg-surface-container-low border border-outline-variant rounded-lg p-card-padding">
+<h2 class="font-title-sm mb-4 border-b border-outline-variant pb-2">예상 임팩트</h2>
+<div class="mb-4">
+<p class="font-label-caps text-on-surface-variant mb-1">예상 일일 경보 수 변화</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-data-mono font-bold text-error">+12%</span>
+<span class="font-body-sm text-on-surface-variant">(~45건/일)</span>
 </div>
 </div>
-<div class="bg-surface rounded border border-outline-variant/50 p-4 mb-4">
-<p class="font-label-caps text-label-caps text-on-surface-variant mb-2">위양성률 (FPR) 예상 변화</p>
-<div class="flex items-end gap-3">
-<span class="font-display-lg text-display-lg text-tertiary">1.2%</span>
-<span class="font-body-sm text-body-sm text-on-surface-variant mb-1 line-through">이전: 0.5%</span>
-</div>
-</div>
-<div class="mt-auto">
-<p class="font-body-sm text-body-sm text-on-surface-variant mb-3 italic">"이상 점수 임계값 분위수가 너무 낮게 설정되어 정상적인 변동 패턴을 이상으로 분류할 확률이 높습니다."</p>
-<!-- Section 6: Actions -->
-<div class="flex flex-col gap-2 mt-4 pt-4 border-t border-outline-variant/50">
-<button class="w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-body-sm text-body-sm py-2 px-4 rounded border border-outline-variant transition-colors flex items-center justify-center gap-2">
-<span class="material-symbols-outlined text-[1rem]">play_arrow</span>
-                                변경사항 미리보기
-                            </button>
-<button class="w-full bg-transparent hover:bg-surface-container text-on-surface font-body-sm text-body-sm py-2 px-4 rounded border border-outline-variant transition-colors">
-                                기본값으로 되돌리기
-                            </button>
-<button type="submit" class="w-full bg-primary hover:bg-primary-container text-[#051424] font-body-md text-body-md font-bold py-3 px-4 rounded transition-colors mt-2">변경사항 저장</button>
-<button type="button" id="settings-rerun" class="w-full bg-tertiary text-on-tertiary font-body-md text-body-md font-bold py-3 px-4 rounded transition-colors">저장 후 재분석</button>
-<input name="random_state" type="hidden" value="42"/>
+<div class="h-32 bg-surface border border-outline-variant rounded relative flex items-end p-2 gap-1 overflow-hidden">
+<!-- Placeholder for a mini-chart/histogram of score distribution -->
+<div class="w-full h-full flex items-end justify-between gap-1 opacity-50">
+<div class="w-1/6 bg-secondary h-1/4 rounded-t-sm"></div>
+<div class="w-1/6 bg-secondary h-2/4 rounded-t-sm"></div>
+<div class="w-1/6 bg-secondary h-full rounded-t-sm"></div>
+<div class="w-1/6 bg-primary h-3/4 rounded-t-sm"></div>
+<div class="w-1/6 bg-error h-1/4 rounded-t-sm"></div>
+<div class="w-1/6 bg-error h-1/6 rounded-t-sm"></div>
 </div>
 </div>
 </section>
 </div>
-</form>
-<p id="settings-message" class="text-primary font-body-sm"></p>
+</div>
+</div>
 </main>
-<!-- Modal: Confirmation -->
-<div class="hidden fixed inset-0 z-50 flex items-center justify-center bg-[#000000]/70 backdrop-blur-sm px-4" id="saveModal">
-<div class="bg-surface border border-outline-variant rounded-xl p-6 max-w-md w-full shadow-[0_0_24px_rgba(30,41,59,0.5)]">
-<h3 class="font-title-sm text-title-sm text-on-surface mb-2 flex items-center gap-2">
-<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
-                설정 변경 확인
-            </h3>
-<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">새로운 Isolation Forest 파라미터가 실시간 모니터링 파이프라인에 즉시 적용됩니다. 시뮬레이션 결과를 확인하셨습니까?</p>
-<label class="flex items-start gap-3 cursor-pointer p-3 bg-surface-container rounded border border-outline-variant/50 mb-6">
-<input class="mt-0.5 bg-background border-outline-variant rounded text-primary focus:ring-primary focus:ring-offset-background" type="checkbox"/>
-<span class="font-body-sm text-body-sm text-on-surface">설정 변경이 탐지 결과에 영향을 줄 수 있음을 확인했습니다.</span>
-</label>
-<div class="flex gap-3 justify-end">
-<button class="px-4 py-2 bg-transparent text-on-surface border border-outline-variant rounded hover:bg-surface-container transition-colors font-body-sm text-body-sm" onclick="document.getElementById('saveModal').classList.add('hidden')">취소</button>
-<button class="px-6 py-2 bg-primary text-[#051424] font-bold rounded hover:bg-primary-container transition-colors font-body-sm text-body-sm disabled:opacity-50 disabled:cursor-not-allowed" onclick="document.getElementById('saveModal').classList.add('hidden')">적용</button>
-</div>
-</div>
-</div>
-<style>
-        .toggle-checkbox:checked {
-            right: 0;
-            border-color: #adc6ff;
-            background-color: #adc6ff;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-            background-color: rgba(173, 198, 255, 0.3);
-        }
-        .toggle-checkbox {
-            transition: all 0.3s;
-        }
-    </style>
 </body></html>

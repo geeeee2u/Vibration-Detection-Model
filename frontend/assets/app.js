@@ -82,6 +82,34 @@ function bindNavigation() {
   });
 }
 
+function addV2Targets() {
+  const main = document.querySelector("main");
+  if (!main) return;
+  const page = document.body.dataset.page;
+  if (page === "overview") {
+    const values = main.querySelectorAll(".font-display-lg");
+    ["overview-current-vibration", "overview-short-mean", "overview-score", "overview-alarm-count"].forEach((id, index) => values[index]?.setAttribute("id", id));
+    const canvas = document.getElementById("vibrationChart");
+    if (canvas) canvas.id = "overview-trend-chart";
+    if (!document.getElementById("overview-threshold")) main.insertAdjacentHTML("beforeend", '<span id="overview-threshold" class="hidden"></span><span id="overview-status" class="hidden"></span><span id="overview-anomaly-type" class="hidden"></span>');
+  }
+  if (page === "analysis") {
+    const tableBody = main.querySelector("tbody"); if (tableBody) tableBody.id = "analysis-rows";
+    if (!document.getElementById("analysis-trend-chart")) main.insertAdjacentHTML("afterbegin", '<section class="bg-surface-container-high border border-outline-variant rounded-lg p-5 h-80"><canvas id="analysis-trend-chart"></canvas></section>');
+  }
+  if (page === "alarms") {
+    const tableBody = main.querySelector("tbody"); if (tableBody) tableBody.id = "alarm-rows";
+    if (!document.getElementById("alarm-detail")) main.insertAdjacentHTML("beforeend", '<aside id="alarm-detail" class="bg-surface-container-high border border-outline-variant rounded-lg"></aside>');
+  }
+  if (page === "performance") {
+    const values = main.querySelectorAll(".font-display-lg"); values[0]?.setAttribute("id", "performance-fpr"); values[1]?.setAttribute("id", "performance-recall");
+    const tableBody = main.querySelector("tbody"); if (tableBody) tableBody.id = "performance-pattern-rows";
+  }
+  if (page === "settings" && !document.getElementById("settings-form")) {
+    main.insertAdjacentHTML("beforeend", '<form id="settings-form" class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-surface-container-high border border-outline-variant rounded-lg p-6"><label>임계값 분위수<input name="threshold_quantile" type="number" step="0.001"/></label><label>경보 지속시간<input name="persistence_seconds" type="number"/></label><label>트리 수<input name="n_estimators" type="number"/></label><label>랜덤 시드<input name="random_state" type="number"/></label><label>단기 윈도우<input name="short_window" type="number"/></label><label>장기 윈도우<input name="long_window" type="number"/></label><label>기울기 윈도우<input name="slope_window" type="number"/></label><div class="md:col-span-2"><button type="submit" class="bg-primary text-on-primary px-4 py-2 rounded">설정 저장</button><button type="button" id="settings-rerun" class="ml-2 border border-outline px-4 py-2 rounded">재분석</button><p id="settings-message"></p></div></form>');
+  }
+}
+
 async function loadCurrentUser() {
   try {
     return await requestJson("/api/auth/me");
@@ -237,6 +265,7 @@ async function runPage() {
   const initializers = { overview: initializeOverview, analysis: initializeAnalysis, alarms: initializeAlarms, performance: initializePerformance, settings: initializeSettings };
   const initialize = initializers[document.body.dataset.page];
   if (!initialize) return;
+  addV2Targets();
   bindNavigation();
   bindRangeButtons(() => runPage());
   try {
