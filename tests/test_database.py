@@ -15,6 +15,14 @@ import pytest
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL")
 
 
+def test_postgresql_url_uses_installed_psycopg_driver():
+    from backend.database import _with_psycopg_driver
+
+    url = _with_psycopg_driver("postgresql://user:pass@example.com:5432/app")
+    assert url.drivername == "postgresql+psycopg"
+    assert url.database == "app"
+
+
 @pytest.fixture
 def repository():
     """Return an empty repository backed by the explicitly configured test DB."""

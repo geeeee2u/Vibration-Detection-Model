@@ -113,13 +113,19 @@ def _frame_records(frame: pd.DataFrame) -> list[dict[str, Any]]:
     return [{str(key): _json_value(value) for key, value in record.items()} for record in frame.to_dict("records")]
 
 
+def _with_psycopg_driver(database_url: str):
+    """Use Psycopg 3 explicitly when the provider URL omits a driver name."""
+    url = make_url(database_url)
+    if not url.drivername.startswith("postgresql"):
+        raise ValueError("DatabaseRepository requires a PostgreSQL database URL")
+    return url.set(drivername="postgresql+psycopg")
+
+
 class DatabaseRepository:
     """SQLAlchemy 2 repository backed exclusively by PostgreSQL."""
 
     def __init__(self, database_url: str):
-        if not make_url(database_url).drivername.startswith("postgresql"):
-            raise ValueError("DatabaseRepository requires a PostgreSQL database URL")
-        self._engine: Engine = create_engine(database_url, pool_pre_ping=True)
+        self._engine: Engine = create_engine(_with_psycopg_driver(database_url), pool_pre_ping=True)
 
     def create_schema(self) -> None:
         METADATA.create_all(self._engine)
