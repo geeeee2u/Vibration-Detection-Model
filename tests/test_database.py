@@ -122,6 +122,8 @@ def test_final_activation_failure_rolls_back_to_previous_active_run(repository, 
     """A SQL failure during final activation must keep the previously active run visible."""
     # Removing the transaction boundary or committing the deactivation first would make this fail.
     from backend.config import ModelSettings
+    from backend.database import ANALYSIS_RUNS
+    from sqlalchemy.engine import Connection
 
     original = pd.DataFrame(
         {
@@ -142,11 +144,24 @@ def test_final_activation_failure_rolls_back_to_previous_active_run(repository, 
     )
     repository.replace_active_run(original, metrics, ModelSettings())
 
-    def fail_final_activation(_connection, _run_id):
-        raise RuntimeError("simulated final activation SQL failure")
+    original_execute = Connection.execute
+    activation_execute_attempted = False
 
-    monkeypatch.setattr(repository, "_activate_run", fail_final_activation)
+    def fail_final_activation_execute(connection, statement, parameters=None, *, execution_options=None):
+        nonlocal activation_execute_attempted
+        is_final_activation = (
+            getattr(statement, "is_update", False)
+            and statement.table is ANALYSIS_RUNS
+            and "analysis_runs.id" in str(statement)
+        )
+        if connection.engine is repository._engine and is_final_activation:
+            activation_execute_attempted = True
+            raise RuntimeError("simulated final activation SQL failure")
+        return original_execute(connection, statement, parameters, execution_options=execution_options)
+
+    monkeypatch.setattr(Connection, "execute", fail_final_activation_execute)
     with pytest.raises(RuntimeError, match="simulated final activation SQL failure"):
         repository.replace_active_run(replacement, metrics, ModelSettings(persistence_seconds=6))
 
+    assert activation_execute_attempted
     assert repository.load_active_results()["Vibration"].tolist() == [1.0]
