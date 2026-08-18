@@ -113,6 +113,12 @@ def _frame_records(frame: pd.DataFrame) -> list[dict[str, Any]]:
     return [{str(key): _json_value(value) for key, value in record.items()} for record in frame.to_dict("records")]
 
 
+def _batches(rows: list[dict[str, Any]] | list[Any], size: int = 500):
+    """Yield bounded batches so PostgreSQL requests stay below parameter limits."""
+    for start in range(0, len(rows), size):
+        yield rows[start : start + size]
+
+
 def _with_psycopg_driver(database_url: str):
     """Use Psycopg 3 explicitly when the provider URL omits a driver name."""
     url = make_url(database_url)
@@ -147,12 +153,15 @@ class DatabaseRepository:
         if not rows:
             return 0
 
-        statement = insert(RAW_VIBRATION_RECORDS).values(rows).on_conflict_do_nothing(
+        statement = insert(RAW_VIBRATION_RECORDS).on_conflict_do_nothing(
             constraint="uq_raw_vibration_case_timestamp"
         )
+        imported_rows = 0
         with self._engine.begin() as connection:
-            result = connection.execute(statement)
-        return int(result.rowcount or 0)
+            for batch in _batches(rows):
+                result = connection.execute(statement, batch)
+                imported_rows += max(int(result.rowcount or 0), 0)
+        return imported_rows
 
     def load_raw_data(self, source_case: str) -> pd.DataFrame:
         statement = (
@@ -210,15 +219,11 @@ class DatabaseRepository:
                 insert(ANALYSIS_RUNS).values(is_active=False).returning(ANALYSIS_RUNS.c.id)
             ).scalar_one()
             if result_rows:
-                connection.execute(
-                    insert(ANALYSIS_RESULTS),
-                    [{"run_id": run_id, **row} for row in result_rows],
-                )
+                for batch in _batches(result_rows):
+                    connection.execute(insert(ANALYSIS_RESULTS), [{"run_id": run_id, **row} for row in batch])
             if metric_rows:
-                connection.execute(
-                    insert(PERFORMANCE_METRICS),
-                    [{"run_id": run_id, **row} for row in metric_rows],
-                )
+                for batch in _batches(metric_rows):
+                    connection.execute(insert(PERFORMANCE_METRICS), [{"run_id": run_id, **row} for row in batch])
             self._save_settings(connection, settings)
             connection.execute(update(ANALYSIS_RUNS).where(ANALYSIS_RUNS.c.is_active.is_(True)).values(is_active=False))
             connection.execute(update(ANALYSIS_RUNS).where(ANALYSIS_RUNS.c.id == run_id).values(is_active=True))

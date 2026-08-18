@@ -15,6 +15,12 @@ import pytest
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL")
 
 
+def test_batches_split_large_payload_without_losing_order():
+    from backend.database import _batches
+
+    assert list(_batches(list(range(5)), size=2)) == [[0, 1], [2, 3], [4]]
+
+
 def test_postgresql_url_uses_installed_psycopg_driver():
     from backend.database import _with_psycopg_driver
 
