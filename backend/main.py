@@ -11,6 +11,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from backend.analysis_service import rerun_analysis, rerun_analysis_from_repository
 from backend.config import ModelSettings, load_settings, save_settings
 from backend.database import DatabaseRepository
+from case1_vibration_isolation_forest import load_case1
 from backend.data_service import (
     filter_results,
     load_results,
@@ -151,6 +152,9 @@ def create_app(
         require_administrator(request)
         if repository is not None:
             try:
+                repository.create_schema()
+                if repository.load_raw_data("Case1").empty:
+                    repository.import_raw_data(load_case1(INPUT), "Case1")
                 result = rerun_analysis_from_repository(settings, repository)
             except Exception as exc:
                 raise HTTPException(500, f"Analysis failed: {exc}") from exc
