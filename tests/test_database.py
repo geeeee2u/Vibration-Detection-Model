@@ -165,3 +165,34 @@ def test_final_activation_failure_rolls_back_to_previous_active_run(repository, 
 
     assert activation_execute_attempted
     assert repository.load_active_results()["Vibration"].tolist() == [1.0]
+
+
+def test_bootstrap_imports_case1_data_and_creates_active_analysis_run(repository, tmp_path, monkeypatch):
+    """Bootstrapping must persist imported Case1 rows and publish an active analysis run."""
+    # Skipping raw import or active-run publication would make this test fail.
+    from scripts.bootstrap_postgres import bootstrap_postgres
+
+    source = pd.DataFrame(
+        {
+            "Timestamps": pd.to_datetime(["2026-01-01 00:00:00", "2026-01-01 00:00:01"]),
+            "Vibration": [1.0, 1.1],
+        }
+    )
+    result = source.assign(is_anomaly=False)
+    metrics = pd.DataFrame(
+        [{"anomaly_type": "normal", "recall": 0.0, "false_positive_rate": 0.003, "rows": 2}]
+    )
+    input_path = tmp_path / "case1.xlsx"
+    source_case = f"Case1-bootstrap-{uuid.uuid4()}"
+
+    monkeypatch.setattr("scripts.bootstrap_postgres.load_case1", lambda _: source)
+    monkeypatch.setattr(
+        "scripts.bootstrap_postgres.rerun_analysis_from_repository",
+        lambda settings, repo, source_case: repo.replace_active_run(result, metrics, settings) or result,
+    )
+
+    counts = bootstrap_postgres(input_path, TEST_DATABASE_URL, source_case=source_case)
+
+    assert counts == {"imported_rows": 2, "raw_rows": 2, "analysis_rows": 2}
+    assert repository.load_raw_data(source_case).equals(source)
+    assert repository.load_active_results()["Vibration"].tolist() == [1.0, 1.1]
