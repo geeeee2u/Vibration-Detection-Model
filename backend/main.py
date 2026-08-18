@@ -138,6 +138,7 @@ def create_app(
     def get_settings(request: Request):
         require_administrator(request)
         if repository is not None:
+            repository.create_schema()
             return repository.load_settings().__dict__
         return load_settings(settings_path).__dict__
     @app.put("/api/settings")

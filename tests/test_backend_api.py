@@ -176,3 +176,41 @@ def test_administrator_can_access_model_settings_after_login(tmp_path):
     assert client.get("/api/settings").status_code == 200
     assert client.post("/api/auth/logout").status_code == 200
     assert client.get("/api/auth/me").status_code == 401
+
+
+def test_settings_request_initializes_database_schema_for_first_time_administrator(tmp_path):
+    """The settings page must be usable before the first analysis has created tables."""
+    from backend.config import ModelSettings
+
+    class EmptyRepository:
+        def __init__(self):
+            self.schema_created = False
+
+        def create_schema(self):
+            self.schema_created = True
+
+        def load_settings(self):
+            return ModelSettings()
+
+    repository = EmptyRepository()
+    app = create_app(
+        results_path=write_results(tmp_path),
+        settings_path=tmp_path / "settings.json",
+        metrics_path=write_metrics(tmp_path),
+        input_path=tmp_path / "input.xlsx",
+        repository=repository,
+        auth_config=AuthConfig(
+            session_secret="test-secret",
+            administrator_username="administrator",
+            administrator_password="admin123",
+            technician_username="technician",
+            technician_password="tech123",
+        ),
+    )
+    client = TestClient(app)
+    client.post("/api/auth/login", json={"username": "administrator", "password": "admin123"})
+
+    response = client.get("/api/settings")
+
+    assert response.status_code == 200
+    assert repository.schema_created is True
