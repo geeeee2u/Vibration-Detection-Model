@@ -215,7 +215,12 @@ class DatabaseRepository:
                 )
             self._save_settings(connection, settings)
             connection.execute(update(ANALYSIS_RUNS).where(ANALYSIS_RUNS.c.is_active.is_(True)).values(is_active=False))
-            connection.execute(update(ANALYSIS_RUNS).where(ANALYSIS_RUNS.c.id == run_id).values(is_active=True))
+            self._activate_run(connection, run_id)
+
+    @staticmethod
+    def _activate_run(connection: Any, run_id: int) -> None:
+        """Mark a fully persisted run active as the final transaction operation."""
+        connection.execute(update(ANALYSIS_RUNS).where(ANALYSIS_RUNS.c.id == run_id).values(is_active=True))
 
     def _load_active_payloads(self, table: Table, include_timestamp: bool) -> pd.DataFrame:
         statement = (

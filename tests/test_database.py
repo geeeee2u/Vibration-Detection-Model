@@ -116,3 +116,37 @@ def test_failed_active_run_replacement_keeps_previous_active_run(repository):
         repository.replace_active_run(invalid, metrics, ModelSettings(persistence_seconds=6))
 
     assert repository.load_active_results()["Vibration"].tolist() == [1.0]
+
+
+def test_final_activation_failure_rolls_back_to_previous_active_run(repository, monkeypatch):
+    """A SQL failure during final activation must keep the previously active run visible."""
+    # Removing the transaction boundary or committing the deactivation first would make this fail.
+    from backend.config import ModelSettings
+
+    original = pd.DataFrame(
+        {
+            "Timestamps": pd.to_datetime(["2026-01-02 00:00:01"]),
+            "Vibration": [1.0],
+            "is_anomaly": [False],
+        }
+    )
+    replacement = pd.DataFrame(
+        {
+            "Timestamps": pd.to_datetime(["2026-01-02 00:00:02"]),
+            "Vibration": [9.0],
+            "is_anomaly": [True],
+        }
+    )
+    metrics = pd.DataFrame(
+        [{"anomaly_type": "normal", "recall": 0.0, "false_positive_rate": 0.003, "rows": 1}]
+    )
+    repository.replace_active_run(original, metrics, ModelSettings())
+
+    def fail_final_activation(_connection, _run_id):
+        raise RuntimeError("simulated final activation SQL failure")
+
+    monkeypatch.setattr(repository, "_activate_run", fail_final_activation)
+    with pytest.raises(RuntimeError, match="simulated final activation SQL failure"):
+        repository.replace_active_run(replacement, metrics, ModelSettings(persistence_seconds=6))
+
+    assert repository.load_active_results()["Vibration"].tolist() == [1.0]
