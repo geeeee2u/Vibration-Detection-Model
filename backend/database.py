@@ -113,6 +113,11 @@ def _frame_records(frame: pd.DataFrame) -> list[dict[str, Any]]:
     return [{str(key): _json_value(value) for key, value in record.items()} for record in frame.to_dict("records")]
 
 
+def _parse_payload_timestamps(values: Any) -> pd.Series:
+    """Parse JSON timestamp strings regardless of fractional-second precision."""
+    return pd.to_datetime(values, format="mixed")
+
+
 def _batches(rows: list[dict[str, Any]] | list[Any], size: int = 500):
     """Yield bounded batches so PostgreSQL requests stay below parameter limits."""
     for start in range(0, len(rows), size):
@@ -239,7 +244,7 @@ class DatabaseRepository:
             payloads = connection.execute(statement).scalars().all()
         frame = pd.DataFrame(payloads)
         if include_timestamp and "Timestamps" in frame.columns:
-            frame["Timestamps"] = pd.to_datetime(frame["Timestamps"])
+            frame["Timestamps"] = _parse_payload_timestamps(frame["Timestamps"])
         return frame
 
     @staticmethod

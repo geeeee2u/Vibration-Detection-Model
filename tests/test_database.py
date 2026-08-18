@@ -29,6 +29,15 @@ def test_postgresql_url_uses_installed_psycopg_driver():
     assert url.database == "app"
 
 
+def test_payload_timestamps_accept_mixed_iso8601_precision():
+    """Stored JSON timestamps may mix whole-second and fractional-second precision."""
+    from backend.database import _parse_payload_timestamps
+
+    parsed = _parse_payload_timestamps(["2026-07-11T00:03:04", "2026-07-11T00:03:04.123456"])
+
+    assert parsed.tolist() == [pd.Timestamp("2026-07-11 00:03:04"), pd.Timestamp("2026-07-11 00:03:04.123456")]
+
+
 @pytest.fixture
 def repository():
     """Return an empty repository backed by the explicitly configured test DB."""
