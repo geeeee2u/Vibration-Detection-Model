@@ -12,3 +12,5 @@ def test_vercel_pyproject_declares_python_dependencies():
 
     assert config["project"]["name"] == "vibration-detection-model"
     assert any(dependency.startswith("fastapi") for dependency in config["project"]["dependencies"])
+    assert any(dependency.startswith("SQLAlchemy") for dependency in config["project"]["dependencies"])
+    assert any(dependency.startswith("psycopg") for dependency in config["project"]["dependencies"])
