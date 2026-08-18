@@ -46,7 +46,11 @@ def rows_payload(frame: pd.DataFrame, columns: list[str] | None = None) -> list[
 
 def performance_payload(metrics_path: str | Path) -> dict:
     """Shape persisted synthetic-evaluation metrics for the dashboard."""
-    metrics = pd.read_csv(metrics_path)
+    return performance_payload_frame(pd.read_csv(metrics_path))
+
+
+def performance_payload_frame(metrics: pd.DataFrame) -> dict:
+    """Shape persisted synthetic-evaluation metrics already loaded from storage."""
     normal = metrics.loc[metrics["anomaly_type"] == "normal"]
     patterns = metrics.loc[metrics["anomaly_type"] != "normal"]
 

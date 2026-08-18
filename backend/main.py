@@ -8,13 +8,15 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
-from backend.analysis_service import rerun_analysis
+from backend.analysis_service import rerun_analysis, rerun_analysis_from_repository
 from backend.config import ModelSettings, load_settings, save_settings
+from backend.database import DatabaseRepository
 from backend.data_service import (
     filter_results,
     load_results,
     overview_payload,
     performance_payload,
+    performance_payload_frame,
     rows_payload,
 )
 
@@ -67,13 +69,17 @@ def create_app(
     metrics_path: Path = METRICS,
     input_path: Path = INPUT,
     auth_config: AuthConfig | None = None,
+    repository: DatabaseRepository | None = None,
 ) -> FastAPI:
     app = FastAPI(title="Case1 Vibration Dashboard")
     auth = auth_config or AuthConfig.from_environment()
-    app.add_middleware(SessionMiddleware, secret_key=auth.session_secret, same_site="lax", https_only=False)
+    repository = repository or (DatabaseRepository(os.environ["DATABASE_URL"]) if os.getenv("DATABASE_URL") else None)
+    app.add_middleware(SessionMiddleware, secret_key=auth.session_secret, same_site="lax", https_only=os.getenv("COOKIE_HTTPS_ONLY", "").lower() in {"1", "true", "yes"})
     frontend = ROOT / "frontend"
     app.mount("/assets", StaticFiles(directory=frontend / "assets"), name="assets")
     def results(start: str | None, end: str | None):
+        if repository is not None:
+            return filter_results(repository.load_active_results(), start, end)
         if not results_path.exists(): raise HTTPException(404, "분석 결과 파일이 없습니다. 설정 화면에서 재분석을 실행하세요.")
         return filter_results(load_results(results_path), start, end)
     for route, filename in PAGES.items():
@@ -122,21 +128,37 @@ def create_app(
         frame = results(start, end); return rows_payload(frame[frame["raw_anomaly"]].sort_values("Timestamps", ascending=False))
     @app.get("/api/performance")
     def performance():
+        if repository is not None:
+            return performance_payload_frame(repository.load_active_metrics())
         if not metrics_path.exists():
             raise HTTPException(404, "성능 지표 파일이 없습니다. 모델 설정 화면에서 재분석을 실행해 주세요.")
         return performance_payload(metrics_path)
     @app.get("/api/settings")
     def get_settings(request: Request):
         require_administrator(request)
+        if repository is not None:
+            return repository.load_settings().__dict__
         return load_settings(settings_path).__dict__
     @app.put("/api/settings")
     def put_settings(settings: ModelSettings, request: Request):
         require_administrator(request)
+        if repository is not None:
+            return repository.save_settings(settings).__dict__
         save_settings(settings, settings_path)
         return settings.__dict__
     @app.post("/api/reanalyze")
     def reanalyze(settings: ModelSettings, request: Request):
         require_administrator(request)
+        if repository is not None:
+            try:
+                result = rerun_analysis_from_repository(settings, repository)
+            except Exception as exc:
+                raise HTTPException(500, f"Analysis failed: {exc}") from exc
+            return {
+                "rows": len(result),
+                "confirmed_alarm_count": int(result["is_anomaly"].sum()),
+                "performance": performance_payload_frame(repository.load_active_metrics()),
+            }
         save_settings(settings, settings_path)
         try: result = rerun_analysis(settings, input_path, results_path, metrics_path)
         except Exception as exc: raise HTTPException(500, f"재분석 실패: {exc}") from exc
