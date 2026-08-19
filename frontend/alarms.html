@@ -176,6 +176,7 @@
         ::-webkit-scrollbar-thumb { background: #424754; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #8c909f; }
     </style>
+<script defer src="/assets/dashboard-utils.js"></script>
 <script defer src="/assets/app.js"></script></head>
 <body data-page="alarms" class="bg-surface text-on-surface w-full h-screen overflow-hidden flex font-body-md text-body-md antialiased">
 <!-- SideNavBar -->
@@ -249,22 +250,26 @@
 </div>
 <div class="flex flex-col gap-unit">
 <label class="font-label-caps text-label-caps text-on-surface-variant">상태 (STATUS)</label>
-<select class="bg-surface-container border border-outline-variant rounded px-4 py-2 font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none h-10 w-32 appearance-none">
-<option>전체</option>
-<option>위험 (Alarm)</option>
-<option>주의 (Candidate)</option>
+<select id="alarm-status-filter" class="bg-surface-container border border-outline-variant rounded px-4 py-2 font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none h-10 w-36 appearance-none">
+<option value="all">전체</option>
+<option value="confirmed">확정 이상</option>
+<option value="candidate">이상 후보</option>
 </select>
 </div>
 <div class="flex flex-col gap-unit">
 <label class="font-label-caps text-label-caps text-on-surface-variant">유형 (TYPE)</label>
-<select class="bg-surface-container border border-outline-variant rounded px-4 py-2 font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none h-10 w-32 appearance-none">
-<option>전체</option>
-<option>진동 급증</option>
-<option>비정상 패턴</option>
+<select id="alarm-type-filter" class="bg-surface-container border border-outline-variant rounded px-4 py-2 font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none h-10 w-44 appearance-none">
+<option value="all">전체</option>
+<option value="gradual_increase">서서히 증가</option>
+<option value="increase_1_to_5pct">1~5% 증가</option>
+<option value="std_increase">표준편차 증가</option>
+<option value="repeated_spike">반복 스파이크</option>
+<option value="general_anomaly">일반 이상</option>
+<option value="normal">유형 미확정</option>
 </select>
 </div>
 <div class="flex gap-stack-sm ml-auto">
-<button class="bg-surface-container-highest hover:bg-surface-variant border border-outline-variant text-on-surface px-4 py-2 rounded flex items-center gap-2 h-10 transition-colors">
+<button id="alarm-apply-filters" class="bg-surface-container-highest hover:bg-surface-variant border border-outline-variant text-on-surface px-4 py-2 rounded flex items-center gap-2 h-10 transition-colors">
 <span class="material-symbols-outlined text-sm">filter_list</span>
 <span class="font-body-sm text-body-sm font-semibold">필터 적용</span>
 </button>
@@ -338,7 +343,7 @@
 </div>
 </section>
 <!-- Alarm Detail Panel (Right Drawer style) -->
-<aside class="w-[400px] flex-shrink-0 bg-surface-container border border-outline-variant rounded-lg p-card-padding flex flex-col gap-stack-md shadow-lg relative overflow-y-auto">
+<aside id="alarm-detail" class="w-[400px] flex-shrink-0 bg-surface-container border border-outline-variant rounded-lg p-card-padding flex flex-col gap-stack-md shadow-lg relative overflow-y-auto">
 <div class="flex justify-between items-center border-b border-outline-variant pb-stack-sm">
 <h3 class="font-title-sm text-title-sm text-on-surface font-bold flex items-center gap-2">
 <span class="material-symbols-outlined text-error">warning</span>

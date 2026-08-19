@@ -17,6 +17,8 @@ const timestamp = value => value ? new Date(value).toLocaleString("ko-KR") : "-"
 const text = (id, value) => { const element = document.getElementById(id); if (element) element.textContent = value; };
 const chartInstances = new Map();
 const ACCESS_DENIED_MESSAGE = "해당 계정으로는 접근할 수 없습니다.";
+const analysisState = { rows: [], controlsBound: false };
+const alarmState = { rows: [], controlsBound: false, selectedTimestamp: null };
 
 function showError(message) {
   let target = document.querySelector("[data-api-error]");
@@ -28,17 +30,71 @@ function showError(message) {
   target.textContent = message;
 }
 
+function clearError() {
+  document.querySelector("[data-api-error]")?.remove();
+}
+
 function downsample(rows, maximum = 1200) {
   if (rows.length <= maximum) return rows;
   const step = Math.ceil(rows.length / maximum);
   return rows.filter((_, index) => index % step === 0 || index === rows.length - 1);
 }
 
+function renderCanvasFallback(canvas, datasets) {
+  const width = Math.max(canvas.clientWidth, 320);
+  const height = Math.max(canvas.clientHeight, 160);
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = width * ratio;
+  canvas.height = height * ratio;
+  const context = canvas.getContext("2d");
+  context.scale(ratio, ratio);
+  context.clearRect(0, 0, width, height);
+  const values = datasets.flatMap(dataset => dataset.data).map(Number).filter(Number.isFinite);
+  if (!values.length) {
+    context.fillStyle = "#8c909f"; context.font = "14px sans-serif";
+    context.fillText("선택한 표시 항목이 없습니다.", 24, 36);
+    return;
+  }
+  const padding = { left: 48, right: 18, top: 20, bottom: 30 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  let minimum = Math.min(...values); let maximum = Math.max(...values);
+  if (minimum === maximum) { minimum -= 1; maximum += 1; }
+  context.strokeStyle = "#273647"; context.lineWidth = 1;
+  for (let line = 0; line <= 4; line += 1) {
+    const y = padding.top + (plotHeight * line / 4);
+    context.beginPath(); context.moveTo(padding.left, y); context.lineTo(width - padding.right, y); context.stroke();
+  }
+  datasets.forEach(dataset => {
+    context.strokeStyle = dataset.borderColor || "#adc6ff";
+    context.lineWidth = dataset.borderWidth || 2;
+    context.setLineDash(dataset.borderDash || []);
+    context.beginPath();
+    dataset.data.forEach((rawValue, index) => {
+      const value = Number(rawValue);
+      if (!Number.isFinite(value)) return;
+      const x = padding.left + (plotWidth * index / Math.max(dataset.data.length - 1, 1));
+      const y = padding.top + plotHeight * (maximum - value) / (maximum - minimum);
+      if (index === 0) context.moveTo(x, y); else context.lineTo(x, y);
+    });
+    context.stroke();
+  });
+  context.setLineDash([]);
+  context.fillStyle = "#8c909f"; context.font = "11px sans-serif";
+  context.fillText(maximum.toFixed(3), 4, padding.top + 4);
+  context.fillText(minimum.toFixed(3), 4, height - padding.bottom);
+}
+
 function renderChart(id, labels, datasets) {
   const canvas = document.getElementById(id);
-  if (!canvas || !window.Chart) return;
+  if (!canvas) return;
   canvas.parentElement?.querySelectorAll(":scope > :not(canvas)").forEach(element => { element.hidden = true; });
   chartInstances.get(id)?.destroy();
+  if (!window.Chart) {
+    chartInstances.delete(id);
+    renderCanvasFallback(canvas, datasets);
+    return;
+  }
   chartInstances.set(id, new Chart(canvas, {
     type: "line", data: { labels, datasets },
     options: {
@@ -95,7 +151,6 @@ function addV2Targets() {
   }
   if (page === "analysis") {
     const tableBody = main.querySelector("tbody"); if (tableBody) tableBody.id = "analysis-rows";
-    if (!document.getElementById("analysis-trend-chart")) main.insertAdjacentHTML("afterbegin", '<section class="bg-surface-container-high border border-outline-variant rounded-lg p-5 h-80"><canvas id="analysis-trend-chart"></canvas></section>');
   }
   if (page === "alarms") {
     const tableBody = main.querySelector("tbody"); if (tableBody) tableBody.id = "alarm-rows";
@@ -209,32 +264,170 @@ function contribution(row) {
   return "Isolation Forest 점수";
 }
 
-async function initializeAnalysis() {
-  const rows = await requestJson(`/api/analysis${rangeQuery()}`);
-  const sampled = downsample(rows);
-  renderChart("analysis-trend-chart", sampled.map(row => new Date(row.Timestamps).toLocaleTimeString("ko-KR")), [
-    { label: "진동값", data: sampled.map(row => row.Vibration), borderColor: "#adc6ff", pointRadius: 0 },
-    { label: "단기 이동평균", data: sampled.map(row => row.short_mean), borderColor: "#004395", pointRadius: 0 },
-    { label: "이상 점수", data: sampled.map(row => row.anomaly_score), borderColor: "#ffb95f", pointRadius: 0 },
-    { label: "임계값", data: sampled.map(row => row.threshold), borderColor: "#ff6961", borderDash: [5, 5], pointRadius: 0 },
-  ]);
-  const target = document.getElementById("analysis-rows");
-  if (target) target.innerHTML = rows.filter(row => row.raw_anomaly).slice(-100).reverse().map(row => `<tr class="border-b border-outline-variant/50 hover:bg-surface-container-high"><td class="p-4">${timestamp(row.Timestamps)}</td><td class="p-4">${row.is_anomaly ? "확정 이상" : "이상 후보"}</td><td class="p-4">${contribution(row)}</td><td class="p-4">${number(row.anomaly_score)}</td><td class="p-4 text-right">현장 확인</td></tr>`).join("") || `<tr><td colspan="5" class="p-4">선택 범위의 이상 후보가 없습니다.</td></tr>`;
+function analysisVisibility() {
+  return {
+    raw: document.getElementById("analysis-show-raw")?.checked ?? true,
+    moving: document.getElementById("analysis-show-moving")?.checked ?? true,
+    score: document.getElementById("analysis-show-score")?.checked ?? true,
+  };
 }
 
-function alarmDetail(row) {
-  return `<div class="p-6 space-y-5"><h3 class="font-title-sm text-title-sm">이벤트 상세</h3><div><span class="inline-flex rounded border px-2 py-1 ${row.is_anomaly ? "border-error text-error" : "border-tertiary text-tertiary"}">${row.is_anomaly ? "확정 이상" : "이상 후보"}</span><p class="mt-2 font-data-mono">${timestamp(row.Timestamps)}</p></div><div class="grid grid-cols-2 gap-3"><div class="rounded border border-outline-variant p-3"><p class="text-on-surface-variant">이상 점수</p><b>${number(row.anomaly_score)}</b><p class="text-on-surface-variant">임계값 ${number(row.threshold)}</p></div><div class="rounded border border-outline-variant p-3"><p class="text-on-surface-variant">진동값</p><b>${number(row.Vibration)}</b><p class="text-on-surface-variant">단기 평균 ${number(row.short_mean)}</p></div></div><p class="text-on-surface-variant">유형: ${koreanType[row.anomaly_type] || row.anomaly_type}</p><p class="border-l-2 border-tertiary p-3">이 경보는 분석 후보 또는 확정 경보이며, 실제 설비 고장 여부는 현장 확인이 필요합니다.</p></div>`;
+function analysisQuery() {
+  return DashboardUtils.buildRangeQuery(
+    document.getElementById("analysis-start")?.value || "",
+    document.getElementById("analysis-end")?.value || "",
+  );
+}
+
+function initializeAnalysisRange(rows) {
+  if (!rows.length) return;
+  const start = document.getElementById("analysis-start");
+  const end = document.getElementById("analysis-end");
+  if (start && !start.value) start.value = String(rows[0].Timestamps).slice(0, 19);
+  if (end && !end.value) end.value = String(rows.at(-1).Timestamps).slice(0, 19);
+}
+
+function renderAnalysis() {
+  const rows = analysisState.rows;
+  const sampled = downsample(rows);
+  const labels = sampled.map(row => new Date(row.Timestamps).toLocaleString("ko-KR"));
+  const series = DashboardUtils.selectAnalysisSeries(sampled, analysisVisibility());
+  const vibrationDatasets = [];
+  if (series.Vibration) vibrationDatasets.push({ label: "진동값", data: series.Vibration, borderColor: "#8c909f", pointRadius: 0, borderWidth: 1 });
+  if (series.short_mean) vibrationDatasets.push({ label: "단기 이동평균", data: series.short_mean, borderColor: "#adc6ff", pointRadius: 0, borderWidth: 2 });
+  if (series.long_mean) vibrationDatasets.push({ label: "장기 이동평균", data: series.long_mean, borderColor: "#ffb95f", pointRadius: 0, borderWidth: 2 });
+  const scoreDatasets = [];
+  if (series.anomaly_score) scoreDatasets.push({ label: "이상 점수", data: series.anomaly_score, borderColor: "#bec6e0", pointRadius: 0, borderWidth: 2 });
+  if (series.threshold) scoreDatasets.push({ label: "임계값", data: series.threshold, borderColor: "#ff6961", borderDash: [5, 5], pointRadius: 0, borderWidth: 2 });
+  renderChart("analysis-vibration-chart", labels, vibrationDatasets);
+  renderChart("analysis-score-chart", labels, scoreDatasets);
+  const target = document.getElementById("analysis-rows");
+  if (target) target.innerHTML = rows.filter(row => row.raw_anomaly).slice(-100).reverse().map(row => `<tr class="border-b border-outline-variant/50 hover:bg-surface-container-high"><td class="p-4">${timestamp(row.Timestamps)}</td><td class="p-4">${row.is_anomaly ? "확정 이상" : "이상 후보"}</td><td class="p-4 text-right">${number(row.anomaly_score)}</td></tr>`).join("") || `<tr><td colspan="3" class="p-4">선택 범위의 이상 후보가 없습니다.</td></tr>`;
+}
+
+function downloadAnalysisCsv() {
+  if (!analysisState.rows.length) { text("analysis-action-message", "내보낼 데이터가 없습니다."); return; }
+  const columns = ["Timestamps", "Vibration", "short_mean", "long_mean", "anomaly_score", "threshold", "raw_anomaly", "confirmed_anomaly", "is_anomaly", "anomaly_type"];
+  const blob = new Blob([DashboardUtils.rowsToCsv(analysisState.rows, columns)], { type: "text/csv;charset=utf-8" });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.download = `vibration-analysis-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  text("analysis-action-message", `${analysisState.rows.length.toLocaleString()}행을 CSV로 내보냈습니다.`);
+}
+
+async function loadAnalysis() {
+  const refresh = document.getElementById("analysis-refresh");
+  if (refresh) refresh.disabled = true;
+  text("analysis-action-message", "데이터를 불러오는 중입니다...");
+  try {
+    const rows = await requestJson(`/api/analysis${analysisQuery()}`);
+    analysisState.rows = rows;
+    initializeAnalysisRange(rows);
+    renderAnalysis();
+    clearError();
+    text("analysis-action-message", `${rows.length.toLocaleString()}행을 불러왔습니다.`);
+  } catch (error) {
+    showError(error.message);
+    text("analysis-action-message", `갱신 실패: ${error.message}`);
+  } finally {
+    if (refresh) refresh.disabled = false;
+  }
+}
+
+function bindAnalysisControls() {
+  if (analysisState.controlsBound) return;
+  analysisState.controlsBound = true;
+  ["analysis-show-raw", "analysis-show-moving", "analysis-show-score"].forEach(id => document.getElementById(id)?.addEventListener("change", renderAnalysis));
+  document.getElementById("analysis-apply-range")?.addEventListener("click", loadAnalysis);
+  document.getElementById("analysis-refresh")?.addEventListener("click", loadAnalysis);
+  document.getElementById("analysis-export-csv")?.addEventListener("click", downloadAnalysisCsv);
+}
+
+async function initializeAnalysis() {
+  bindAnalysisControls();
+  await loadAnalysis();
+}
+
+function alarmDetail(row, trendError = "") {
+  return `<div class="flex h-full flex-col gap-4">
+    <div class="flex items-center justify-between border-b border-outline-variant pb-3">
+      <h3 class="font-title-sm text-title-sm font-bold"><span class="material-symbols-outlined mr-2 align-middle text-error">warning</span>상세 분석 정보</h3>
+      <span class="inline-flex rounded border px-2 py-1 text-xs font-bold ${row.is_anomaly ? "border-error text-error" : "border-tertiary text-tertiary"}">${row.is_anomaly ? "확정 이상" : "이상 후보"}</span>
+    </div>
+    <div><p class="text-xs text-on-surface-variant">발생 시각</p><p data-detail-timestamp class="font-data-mono text-lg">${timestamp(row.Timestamps)}</p></div>
+    <div class="grid grid-cols-2 gap-2">
+      <div class="rounded border border-outline-variant bg-surface-container-low p-3"><p class="text-xs text-on-surface-variant">이상 유형</p><b>${koreanType[row.anomaly_type] || row.anomaly_type}</b></div>
+      <div class="rounded border border-outline-variant bg-surface-container-low p-3"><p class="text-xs text-on-surface-variant">진동값</p><b>${number(row.Vibration)}</b></div>
+      <div class="rounded border border-outline-variant bg-surface-container-low p-3"><p class="text-xs text-on-surface-variant">단기 / 장기 평균</p><b>${number(row.short_mean)} / ${number(row.long_mean)}</b></div>
+      <div class="rounded border border-outline-variant bg-surface-container-low p-3"><p class="text-xs text-on-surface-variant">이상 점수 / 임계값</p><b>${number(row.anomaly_score)} / ${number(row.threshold)}</b></div>
+    </div>
+    <div><div class="mb-2 flex justify-between text-xs text-on-surface-variant"><span>국소 진동 트렌드 (±1분)</span><span>Score ${number(row.anomaly_score)}</span></div><div class="h-44 rounded border border-outline-variant bg-surface-container-low p-2"><canvas id="alarm-local-trend"></canvas></div>${trendError ? `<p class="mt-1 text-xs text-error">${trendError}</p>` : ""}</div>
+    <div><p class="mb-2 text-xs text-on-surface-variant">주요 Feature 값</p><div class="grid grid-cols-2 gap-2 text-sm">
+      <p>표준편차 <b class="float-right">${number(row.short_std)}</b></p><p>변동성 비율 <b class="float-right">${number(row.volatility_ratio)}</b></p>
+      <p>변화 기울기 <b class="float-right">${number(row.slope, 5)}</b></p><p>스파이크 수 <b class="float-right">${number(row.spike_count, 0)}</b></p>
+    </div></div>
+    <p class="mt-auto border-l-2 border-tertiary bg-surface-container-low p-3 text-sm text-on-surface-variant">이 결과는 설비 고장 확정이 아닌 이상 후보 또는 확정 경보입니다. 실제 고장 여부는 현장 점검이 필요합니다.</p>
+  </div>`;
+}
+
+async function selectAlarm(row, item) {
+  const detail = document.getElementById("alarm-detail");
+  if (!detail) return;
+  alarmState.selectedTimestamp = row.Timestamps;
+  document.querySelectorAll("[data-alarm-index]").forEach(element => {
+    const selected = element === item;
+    element.setAttribute("aria-selected", String(selected));
+    element.classList.toggle("bg-secondary-container/30", selected);
+    element.classList.toggle("border-l-2", selected);
+    element.classList.toggle("border-l-primary", selected);
+  });
+  detail.innerHTML = alarmDetail(row);
+  try {
+    const trend = await requestJson(`/api/trend${DashboardUtils.buildCenteredRangeQuery(row.Timestamps, 60)}`);
+    if (alarmState.selectedTimestamp !== row.Timestamps) return;
+    const sampled = downsample(trend, 600);
+    renderChart("alarm-local-trend", sampled.map(point => new Date(point.Timestamps).toLocaleTimeString("ko-KR")), [
+      { label: "진동값", data: sampled.map(point => point.Vibration), borderColor: "#adc6ff", pointRadius: 0, borderWidth: 2 },
+      { label: "단기 이동평균", data: sampled.map(point => point.short_mean), borderColor: "#ffb95f", pointRadius: 0, borderWidth: 2 },
+    ]);
+  } catch (error) {
+    if (alarmState.selectedTimestamp !== row.Timestamps) return;
+    detail.innerHTML = alarmDetail(row, `국소 트렌드를 불러오지 못했습니다: ${error.message}`);
+  }
+}
+
+function renderAlarms() {
+  const rows = DashboardUtils.filterAlarmRows(
+    alarmState.rows,
+    document.getElementById("alarm-status-filter")?.value || "all",
+    document.getElementById("alarm-type-filter")?.value || "all",
+  );
+  const target = document.getElementById("alarm-rows");
+  if (!target) return;
+  target.innerHTML = rows.map((row, index) => `<tr data-alarm-index="${index}" class="hover:bg-surface-container transition-colors cursor-pointer"><td class="py-3 px-4">${timestamp(row.Timestamps)}</td><td class="py-3 px-4 text-right">${number(row.Vibration)}</td><td class="py-3 px-4 text-right">${number(row.short_mean)}</td><td class="py-3 px-4 text-right">${number(row.anomaly_score)}</td><td class="py-3 px-4 text-center">${row.is_anomaly ? "확정 이상" : "이상 후보"}</td><td class="py-3 px-4">${koreanType[row.anomaly_type] || row.anomaly_type}</td><td class="py-3 px-4"><button class="text-primary" type="button" aria-label="상세 보기"><span class="material-symbols-outlined text-base">chevron_right</span></button></td></tr>`).join("") || `<tr><td colspan="7" class="p-4">선택한 조건의 경보가 없습니다.</td></tr>`;
+  const items = target.querySelectorAll("[data-alarm-index]");
+  items.forEach(item => item.addEventListener("click", () => selectAlarm(rows[Number(item.dataset.alarmIndex)], item)));
+  if (rows[0]) selectAlarm(rows[0], items[0]);
+  else {
+    alarmState.selectedTimestamp = null;
+    const detail = document.getElementById("alarm-detail");
+    if (detail) detail.innerHTML = '<div class="p-6 text-on-surface-variant">선택한 조건에 맞는 경보가 없습니다.</div>';
+  }
+}
+
+function bindAlarmControls() {
+  if (alarmState.controlsBound) return;
+  alarmState.controlsBound = true;
+  ["alarm-status-filter", "alarm-type-filter"].forEach(id => document.getElementById(id)?.addEventListener("change", renderAlarms));
+  document.getElementById("alarm-apply-filters")?.addEventListener("click", renderAlarms);
 }
 
 async function initializeAlarms() {
-  const rows = await requestJson(`/api/alarms${rangeQuery()}`);
-  const target = document.getElementById("alarm-rows");
-  const detail = document.getElementById("alarm-detail");
-  if (!target) return;
-  target.innerHTML = rows.map((row, index) => `<tr data-alarm-index="${index}" class="hover:bg-surface-container transition-colors cursor-pointer"><td class="py-3 px-4">${timestamp(row.Timestamps)}</td><td class="py-3 px-4 text-right">${number(row.Vibration)}</td><td class="py-3 px-4 text-right">${number(row.short_mean)}</td><td class="py-3 px-4 text-right">${number(row.anomaly_score)}</td><td class="py-3 px-4 text-right">${number(row.threshold)}</td><td class="py-3 px-4 text-center">${row.is_anomaly ? "확정 이상" : "이상 후보"}</td><td class="py-3 px-4">${koreanType[row.anomaly_type] || row.anomaly_type}</td></tr>`).join("") || `<tr><td colspan="7" class="p-4">선택 범위의 경보가 없습니다.</td></tr>`;
-  const select = row => { if (detail) detail.innerHTML = alarmDetail(row); };
-  target.querySelectorAll("[data-alarm-index]").forEach(item => item.addEventListener("click", () => select(rows[Number(item.dataset.alarmIndex)])));
-  if (rows[0]) select(rows[0]);
+  alarmState.rows = await requestJson(`/api/alarms${rangeQuery()}`);
+  bindAlarmControls();
+  renderAlarms();
 }
 
 async function initializePerformance() {

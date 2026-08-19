@@ -192,6 +192,7 @@
         }
       </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script defer src="/assets/dashboard-utils.js"></script>
 <script defer src="/assets/app.js"></script></head>
 <body data-page="analysis" class="bg-background text-on-surface font-body-md min-h-screen flex selection:bg-primary-container selection:text-on-primary-container">
 <!-- SideNavBar (Shared Component) -->
@@ -266,40 +267,44 @@
 <!-- Main Content Area -->
 <main class="ml-[240px] mt-16 p-container-margin w-[calc(100%-240px)] flex flex-col gap-container-margin max-w-[1440px] mx-auto">
 <!-- Controls Bar -->
-<section class="flex justify-between items-center bg-surface-container-low p-4 rounded-lg border border-outline-variant">
-<div class="flex items-center gap-4">
-<div class="flex items-center gap-2">
+<section class="flex flex-wrap justify-between items-center gap-4 bg-surface-container-low p-4 rounded-lg border border-outline-variant">
+<div class="flex flex-wrap items-center gap-4">
+<div class="flex flex-wrap items-center gap-2">
 <span class="material-symbols-outlined text-on-surface-variant text-[20px]">calendar_today</span>
-<select class="bg-surface border border-outline-variant text-on-surface font-data-mono text-data-mono rounded px-3 py-1.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-<option>2023-10-26 00:00 ~ 2023-10-27 00:00</option>
-<option>Last 7 Days</option>
-<option>Last 30 Days</option>
-</select>
+<label class="flex items-center gap-2 text-body-sm text-on-surface-variant">시작
+<input id="analysis-start" class="bg-surface border border-outline-variant text-on-surface font-data-mono text-data-mono rounded px-3 py-1.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" type="datetime-local" step="1"/>
+</label>
+<span class="text-on-surface-variant">~</span>
+<label class="flex items-center gap-2 text-body-sm text-on-surface-variant">종료
+<input id="analysis-end" class="bg-surface border border-outline-variant text-on-surface font-data-mono text-data-mono rounded px-3 py-1.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" type="datetime-local" step="1"/>
+</label>
+<button id="analysis-apply-range" class="px-3 py-1.5 border border-outline text-on-surface hover:bg-surface-container-high rounded text-body-sm">조회</button>
 </div>
 <div class="h-6 w-[1px] bg-outline-variant"></div>
 <div class="flex items-center gap-3">
 <label class="flex items-center gap-2 cursor-pointer">
-<input checked="" class="form-checkbox bg-surface border-outline-variant text-primary rounded focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<input id="analysis-show-raw" checked="" class="form-checkbox bg-surface border-outline-variant text-primary rounded focus:ring-primary focus:ring-offset-background" type="checkbox"/>
 <span class="text-body-sm text-on-surface-variant">원본 데이터</span>
 </label>
 <label class="flex items-center gap-2 cursor-pointer">
-<input checked="" class="form-checkbox bg-surface border-outline-variant text-primary rounded focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<input id="analysis-show-moving" checked="" class="form-checkbox bg-surface border-outline-variant text-primary rounded focus:ring-primary focus:ring-offset-background" type="checkbox"/>
 <span class="text-body-sm text-on-surface-variant">이동평균 (Short/Long)</span>
 </label>
 <label class="flex items-center gap-2 cursor-pointer">
-<input checked="" class="form-checkbox bg-surface border-outline-variant text-primary rounded focus:ring-primary focus:ring-offset-background" type="checkbox"/>
+<input id="analysis-show-score" checked="" class="form-checkbox bg-surface border-outline-variant text-primary rounded focus:ring-primary focus:ring-offset-background" type="checkbox"/>
 <span class="text-body-sm text-on-surface-variant">이상 점수 오버레이</span>
 </label>
 </div>
 </div>
 <div class="flex gap-2">
-<button class="px-4 py-2 bg-transparent border border-outline text-on-surface hover:bg-surface-container-high transition-colors rounded font-body-sm flex items-center gap-2">
+<button id="analysis-export-csv" class="px-4 py-2 bg-transparent border border-outline text-on-surface hover:bg-surface-container-high transition-colors rounded font-body-sm flex items-center gap-2">
 <span class="material-symbols-outlined text-[18px]">download</span> CSV 내보내기
                 </button>
-<button class="px-4 py-2 bg-primary text-on-primary-fixed hover:bg-primary-container transition-colors rounded font-body-sm font-semibold flex items-center gap-2 shadow-sm">
+<button id="analysis-refresh" class="px-4 py-2 bg-primary text-on-primary-fixed hover:bg-primary-container transition-colors rounded font-body-sm font-semibold flex items-center gap-2 shadow-sm">
 <span class="material-symbols-outlined text-[18px]">refresh</span> 데이터 갱신
                 </button>
 </div>
+<p id="analysis-action-message" class="basis-full min-h-5 text-right text-body-sm text-on-surface-variant" aria-live="polite"></p>
 </section>
 <!-- Section 1: 진동 트렌드 분석 -->
 <section class="bg-surface-container-low rounded-lg border border-outline-variant overflow-hidden">
@@ -315,28 +320,7 @@
 </div>
 </div>
 <div class="p-4 bg-surface h-[320px] relative">
-<!-- Mock Chart Area - In a real app this would be a canvas/svg from a charting library -->
-<div class="absolute inset-0 flex items-center justify-center p-8 opacity-60">
-<div class="w-full h-full border-l border-b border-outline-variant relative">
-<!-- Grid lines -->
-<div class="absolute top-1/4 w-full border-t border-outline-variant/30"></div>
-<div class="absolute top-2/4 w-full border-t border-outline-variant/30"></div>
-<div class="absolute top-3/4 w-full border-t border-outline-variant/30"></div>
-<!-- Mock Line Data -->
-<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 100">
-<!-- Raw Data (Gray/subtle) -->
-<polyline fill="none" points="0,50 100,45 200,60 300,55 400,20 500,80 600,45 700,50 800,55 900,45 1000,50" stroke="#424754" stroke-width="1"></polyline>
-<!-- Long Mean (Tertiary) -->
-<polyline fill="none" points="0,50 200,55 400,45 600,55 800,50 1000,52" stroke="#ffb95f" stroke-width="2"></polyline>
-<!-- Short Mean (Primary) -->
-<polyline fill="none" points="0,50 100,48 200,58 300,53 400,25 500,75 600,48 700,51 800,54 900,46 1000,51" stroke="#adc6ff" stroke-width="2"></polyline>
-<!-- Anomaly Highlight Area -->
-<rect fill="#93000a" height="100" opacity="0.1" width="140" x="380" y="0"></rect>
-<line stroke="#ffb4ab" stroke-dasharray="4" stroke-width="1" x1="380" x2="380" y1="0" y2="100"></line>
-<line stroke="#ffb4ab" stroke-dasharray="4" stroke-width="1" x1="520" x2="520" y1="0" y2="100"></line>
-</svg>
-</div>
-</div>
+<canvas id="analysis-vibration-chart"></canvas>
 </div>
 </section>
 <!-- Section 2: 이상 점수 분석 -->
@@ -352,18 +336,7 @@
 </div>
 </div>
 <div class="p-4 bg-surface h-[200px] relative">
-<div class="absolute inset-0 flex items-center justify-center p-8 opacity-80">
-<div class="w-full h-full border-l border-b border-outline-variant relative">
-<!-- Threshold Line -->
-<div class="absolute top-[15%] w-full border-t-2 border-error border-dashed z-10"></div>
-<!-- Mock Bar/Line Chart -->
-<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 100">
-<polyline fill="none" points="0,80 100,75 200,85 300,70 380,10 450,5 500,20 600,75 700,80 800,70 900,85 1000,80" stroke="#bec6e0" stroke-width="2"></polyline>
-<!-- Fill area under score where it exceeds threshold (y < 15) -->
-<path d="M 370,15 L 380,10 L 450,5 L 500,20 L 490,15 Z" fill="#ffb4ab" opacity="0.4"></path>
-</svg>
-</div>
-</div>
+<canvas id="analysis-score-chart"></canvas>
 </div>
 </section>
 <!-- Section 3 & 4 Layout Grid -->

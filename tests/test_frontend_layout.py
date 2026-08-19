@@ -18,7 +18,7 @@ def test_frontend_pages_keep_live_data_targets():
         assert f'data-page="{page}"' in html
 
     script = (ROOT / "frontend" / "assets" / "app.js").read_text(encoding="utf-8")
-    for target in ("overview-current-vibration", "overview-trend-chart", "analysis-trend-chart", "analysis-rows", "alarm-rows", "alarm-detail", "performance-fpr", "performance-pattern-rows", "settings-form"):
+    for target in ("overview-current-vibration", "overview-trend-chart", "analysis-vibration-chart", "analysis-score-chart", "analysis-rows", "alarm-rows", "alarm-detail", "performance-fpr", "performance-pattern-rows", "settings-form"):
         assert target in script
 
 
@@ -51,6 +51,16 @@ def test_analysis_page_loads_chartjs_before_the_dashboard_script():
     html = (ROOT / "frontend" / "analysis.html").read_text(encoding="utf-8")
 
     assert "cdn.jsdelivr.net/npm/chart.js" in html
+    for target in ("analysis-start", "analysis-end", "analysis-apply-range", "analysis-show-raw", "analysis-show-moving", "analysis-show-score", "analysis-export-csv", "analysis-refresh"):
+        assert f'id="{target}"' in html
+
+
+def test_alarm_page_exposes_filter_controls():
+    html = (ROOT / "frontend" / "alarms.html").read_text(encoding="utf-8")
+
+    for target in ("alarm-status-filter", "alarm-type-filter", "alarm-apply-filters"):
+        assert f'id="{target}"' in html
+    assert '<aside id="alarm-detail"' in html
 
 
 def test_performance_page_has_an_explicit_dark_background():
